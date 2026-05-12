@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+.env*.local
+export.geojson
+*.local
+.DS_Store
