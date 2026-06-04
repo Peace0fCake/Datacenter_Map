@@ -230,8 +230,9 @@ const IS_CLUSTER  = ['has', 'point_count'];
 const IS_SELECTED = ['all', NOT_CLUSTER, ['==', ['get', 'selected'], 1]];
 const IS_SIM      = ['all', NOT_CLUSTER, ['==', ['get', 'simulation'], 1]];
 
-const COUNTRY_MAX_ZOOM = 5;
+const COUNTRY_MAX_ZOOM = 4;
 const DC_MIN_ZOOM = 4;
+const CAMPUS_MIN_ZOOM = 3;
 
 export function MapView({
   dataCenters, countryGroups, selectedDC, onSelectDC, onSelectCountry,
@@ -357,13 +358,13 @@ export function MapView({
           />
         </Source>
 
-        {/* Campus-level dots — one per campus, visible zoom 5–15, sized/coloured by footprint */}
+        {/* Campus-level dots — one per campus, visible from zoom 3–15, sized/coloured by footprint */}
         <Source id="campus-source" type="geojson" data="/data/osm_campuses.geojson">
           {/* Selected campus ring */}
           <Layer
             id="campus-selected-ring"
             type="circle"
-            minzoom={5}
+            minzoom={CAMPUS_MIN_ZOOM}
             maxzoom={15}
             filter={['==', ['get', 'id'], selectedDC?.id ?? '']}
             paint={{
@@ -377,7 +378,7 @@ export function MapView({
           <Layer
             id="campus-circles"
             type="circle"
-            minzoom={5}
+            minzoom={CAMPUS_MIN_ZOOM}
             maxzoom={15}
             paint={{
               'circle-color':        areaColorExpr('total_footprint_m2'),

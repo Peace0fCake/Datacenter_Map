@@ -187,7 +187,7 @@ export default function App() {
     <div className={`app theme-${theme}`}>
       <header className="app-header">
         <div className="header-title">
-          <h1>AI Data Centers</h1>
+          <h1>Data Centers</h1>
           <span className="header-sub">Environmental footprint across Europe</span>
         </div>
         <div className="header-controls">
