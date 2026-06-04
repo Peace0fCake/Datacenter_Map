@@ -61,7 +61,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
-## Limitations and future work
+## Limitations
 
 - Capacity figures are estimated from operator name heuristics and are not verified; the panel explicitly flags this and points users to Simulation mode
 - WRI Aqueduct serves point scores only — a true basin-level water stress layer would require pre-processing their full GeoPackage dataset

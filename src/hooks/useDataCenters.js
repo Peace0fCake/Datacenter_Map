@@ -5,21 +5,34 @@ const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 const EU_BBOX = '34.0,-25.0,72.0,50.0';
 
 // Source: OpenStreetMap contributors (ODbL) — https://www.openstreetmap.org/copyright
-// Primary tag: telecom=data_center (used by ~95% of mapped DCs in Europe)
+// Covers all known OSM tagging schemes — both US and British spellings, all element types.
 const QUERY = `
 [out:json][timeout:60];
 (
   node["telecom"="data_center"](${EU_BBOX});
+  node["telecom"="data_centre"](${EU_BBOX});
   node["building"="data_center"](${EU_BBOX});
   node["building"="data_centre"](${EU_BBOX});
+  node["facility"="data_center"](${EU_BBOX});
   node["facility"="data_centre"](${EU_BBOX});
+  node["man_made"="data_center"](${EU_BBOX});
+  node["man_made"="data_centre"](${EU_BBOX});
   way["telecom"="data_center"](${EU_BBOX});
+  way["telecom"="data_centre"](${EU_BBOX});
   way["building"="data_center"](${EU_BBOX});
   way["building"="data_centre"](${EU_BBOX});
+  way["facility"="data_center"](${EU_BBOX});
   way["facility"="data_centre"](${EU_BBOX});
+  way["man_made"="data_center"](${EU_BBOX});
+  way["man_made"="data_centre"](${EU_BBOX});
   relation["telecom"="data_center"](${EU_BBOX});
+  relation["telecom"="data_centre"](${EU_BBOX});
+  relation["building"="data_center"](${EU_BBOX});
   relation["building"="data_centre"](${EU_BBOX});
+  relation["facility"="data_center"](${EU_BBOX});
   relation["facility"="data_centre"](${EU_BBOX});
+  relation["man_made"="data_center"](${EU_BBOX});
+  relation["man_made"="data_centre"](${EU_BBOX});
 );
 out center tags;
 `;

@@ -127,6 +127,9 @@ function WaterStressGauge({ score, label, color }) {
 
 function CountryPanel({ country, onClose }) {
   const fossilPct = 100 - (country.carbon.renewables_pct ?? 0) - (country.carbon.nuclear_pct ?? 0);
+  const osm = country.osm;
+  const dcPower = country.dcPower;
+  const footprintHa = osm?.total_footprint_m2 ? (osm.total_footprint_m2 / 10_000).toFixed(1) : null;
   return (
     <>
       <div className="panel-header">
@@ -140,17 +143,31 @@ function CountryPanel({ country, onClose }) {
         <span className="tag tag-country">{country.countryCode}</span>
       </div>
       <div className="panel-section">
-        <SectionLabel>Data Centers</SectionLabel>
+        <SectionLabel>Data Centers · OSM</SectionLabel>
         <div className="card-grid">
           <div className="metric-card">
             <div className="card-icon">🏢</div>
-            <BigNumber value={country.dcCount} unit="DCs" sub="mapped in OSM" />
+            <BigNumber value={(osm?.campus_count ?? country.dcCount).toLocaleString()} unit="campuses" sub={osm ? `${osm.building_count} data rooms` : 'mapped in OSM'} />
           </div>
           <div className="metric-card">
-            <div className="card-icon">⚡</div>
-            <BigNumber value={country.totalCapacityMW.toLocaleString()} unit="MW" sub="total IT capacity est." />
+            <div className="card-icon">⬛</div>
+            <BigNumber value={footprintHa ?? '—'} unit={footprintHa ? 'ha' : ''} sub="total mapped footprint" />
           </div>
         </div>
+        {dcPower && (
+          <div className="country-power-row">
+            <div className="country-power-main">
+              <span className="country-power-val">{dcPower.twh} TWh/yr</span>
+              <span className="country-power-label">estimated DC electricity</span>
+            </div>
+            <div className="country-power-meta">
+              <span>{dcPower.pct_national}% of national grid</span>
+              <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>
+                {dcPower.source}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
       <div className="panel-section">
         <SectionLabel>Grid · Ember Climate 2023</SectionLabel>
@@ -204,11 +221,13 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
             <div className="panel-header">
               <div className="panel-title-group">
                 <h2 title={dc.name}>{dc.name}</h2>
-                {dc.operator && <span className="panel-operator">{dc.operator}</span>}
+                <span className={`panel-operator ${!dc.operator ? 'no-operator' : ''}`}>
+                  {dc.operator ?? 'No operator indicated'}
+                </span>
                 <div className="panel-source">
-                  {dc.source === 'osm' && dc.sourceUrl
+                  {(dc.source === 'osm' || dc.source === 'campus') && dc.sourceUrl
                     ? <a href={dc.sourceUrl} target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
-                    : dc.source === 'osm'
+                    : (dc.source === 'osm' || dc.source === 'campus')
                     ? <span>OpenStreetMap</span>
                     : dc.source === 'simulation'
                     ? <span>Simulation</span>
@@ -226,7 +245,26 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
               )}
               {isSimulation && <span className="tag tag-sim">Simulation</span>}
               {dc.source === 'fallback' && <span className="tag tag-fallback">OSM fallback</span>}
+              {dc.source === 'campus' && dc.buildingCount > 1 && (
+                <span className="tag tag-campus">{dc.buildingCount} buildings</span>
+              )}
             </div>
+
+            {/* Footprint */}
+            {dc.footprintM2 > 0 && (
+              <div className="panel-footprint">
+                <span className="footprint-icon">⬛</span>
+                <span className="footprint-val">
+                  {dc.footprintM2 >= 10_000
+                    ? `${(dc.footprintM2 / 10_000).toFixed(2)} ha`
+                    : `${dc.footprintM2.toLocaleString()} m²`}
+                </span>
+                <span className="footprint-label">footprint</span>
+                {dc.buildingCount > 1 && (
+                  <span className="footprint-label"> across {dc.buildingCount} buildings</span>
+                )}
+              </div>
+            )}
 
             {/* Simulation capacity slider */}
             {isSimulation && (
@@ -353,7 +391,9 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
 
                 <div className="panel-footer">
                   <span>PUE {m.pue} · {m.avgTempC}°C avg · {(m.utilizationRate * 100).toFixed(0)}% util.</span>
-                  <span className="model-note">estimated</span>
+                  <span className="model-note">
+                    {dc.footprintM2 ? 'area-allocated · JRC 2023' : 'capacity model'}
+                  </span>
                 </div>
               </>
             ) : (

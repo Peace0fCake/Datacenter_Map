@@ -3,6 +3,7 @@ import Map, { Source, Layer } from 'react-map-gl/maplibre';
 import { waterStressLabel } from '../lib/model';
 import carbonData from '../data/carbonIntensity.json';
 import waterStressData from '../data/waterStress.json';
+import { SearchBar } from './SearchBar';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const STYLES = {
@@ -101,6 +102,72 @@ function toCountryGeoJSON(countryGroups) {
   };
 }
 
+// ── Campus / building visual scales ──────────────────────────────────────────
+
+// area_field: 'total_footprint_m2' for campuses, 'footprint_m2' for buildings
+function areaColorExpr(field) {
+  return [
+    'interpolate', ['linear'],
+    ['coalesce', ['get', field], 0],
+    0,       '#64748b',   // no data: slate
+    500,     '#6366f1',   // tiny (<500 m²): indigo
+    5000,    '#0ea5e9',   // small: sky
+    25000,   '#eab308',   // medium: yellow
+    100000,  '#f97316',   // large: orange
+    400000,  '#ef4444',   // hyperscale: red
+  ];
+}
+
+const CAMPUS_RADIUS = [
+  'interpolate', ['linear'],
+  ['coalesce', ['get', 'total_footprint_m2'], 0],
+  0,       5,
+  1000,    7,
+  10000,   10,
+  50000,   14,
+  200000,  18,
+  800000,  22,
+];
+
+const IS_POLYGON = ['match', ['geometry-type'], ['Polygon', 'MultiPolygon'], true, false];
+const IS_POINT_GEOM = ['==', ['geometry-type'], 'Point'];
+
+// ── DC object factories (campus / individual building click) ──────────────────
+
+function campusToDC(props) {
+  return {
+    id:          props.id,
+    lat:         props.lat,
+    lng:         props.lon,
+    name:        props.name || 'Data Center',
+    operator:    props.operator || null,
+    capacityMW:  props.estimated_capacity_mw || null,
+    footprintM2: props.total_footprint_m2 || null,
+    buildingCount: props.building_count || 1,
+    source:      'campus',
+    sourceUrl:   props.osm_url || null,
+    country:     props.country_iso2 || null,
+    tags:        {},
+  };
+}
+
+function buildingToDC(props) {
+  return {
+    id:          props.id,
+    lat:         props.lat,
+    lng:         props.lon,
+    name:        props.name || props.operator || 'Data Center',
+    operator:    props.operator || null,
+    capacityMW:  props.estimated_capacity_mw || null,
+    footprintM2: props.footprint_m2 || null,
+    buildingCount: 1,
+    source:      'osm',
+    sourceUrl:   props.osm_url || null,
+    country:     props.addr_country || props.country_iso2 || null,
+    tags:        {},
+  };
+}
+
 // ── Static layer configs ───────────────────────────────────────────────────────
 
 const CLUSTER_PAINT = {
@@ -184,7 +251,25 @@ export function MapView({
 
   const handleClick = useCallback(async (e) => {
     const features = e.features ?? [];
+    const zoom = mapRef.current?.getMap()?.getZoom() ?? 0;
 
+    // Individual building polygon or node takes priority at high zoom (15+)
+    const buildingFeat = features.find(f =>
+      f.layer.id === 'building-fills' || f.layer.id === 'building-nodes'
+    );
+    if (buildingFeat) {
+      onSelectDC(buildingToDC(buildingFeat.properties));
+      return;
+    }
+
+    // Campus circle only fires when buildings are not yet visible (zoom < 15)
+    const campusFeat = features.find(f => f.layer.id === 'campus-circles');
+    if (campusFeat && zoom < 15) {
+      onSelectDC(campusToDC(campusFeat.properties));
+      return;
+    }
+
+    // Simulation DC point
     const pointFeat = features.find(f => f.layer.id === 'dc-points');
     if (pointFeat) {
       const dc = dataCenters.find(d => d.id === pointFeat.properties.id);
@@ -233,6 +318,7 @@ export function MapView({
 
   return (
     <div className={`map-container ${simulationActive ? 'sim-cursor' : ''}`}>
+      <SearchBar mapRef={mapRef} />
       <Map
         ref={mapRef}
         initialViewState={{ longitude: 10, latitude: 52, zoom: 4 }}
@@ -240,7 +326,7 @@ export function MapView({
         onClick={handleClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        interactiveLayerIds={['dc-points', 'dc-clusters', 'country-labels']}
+        interactiveLayerIds={['campus-circles', 'building-fills', 'building-nodes', 'dc-points', 'dc-clusters', 'country-labels']}
         attributionControl={true}
       >
         {/* Country overlay — carbon intensity or water stress */}
@@ -271,20 +357,96 @@ export function MapView({
           />
         </Source>
 
-        {/* Individual DC points — clustered between DC_MIN_ZOOM and zoom 8 */}
+        {/* Campus-level dots — one per campus, visible zoom 5–15, sized/coloured by footprint */}
+        <Source id="campus-source" type="geojson" data="/data/osm_campuses.geojson">
+          {/* Selected campus ring */}
+          <Layer
+            id="campus-selected-ring"
+            type="circle"
+            minzoom={5}
+            maxzoom={15}
+            filter={['==', ['get', 'id'], selectedDC?.id ?? '']}
+            paint={{
+              'circle-radius': ['interpolate', ['linear'], ['coalesce', ['get', 'total_footprint_m2'], 0],
+                0, 9, 1000, 11, 10000, 14, 50000, 18, 200000, 22, 800000, 26],
+              'circle-color':        'rgba(0,0,0,0)',
+              'circle-stroke-width': 2.5,
+              'circle-stroke-color': '#22c55e',
+            }}
+          />
+          <Layer
+            id="campus-circles"
+            type="circle"
+            minzoom={5}
+            maxzoom={15}
+            paint={{
+              'circle-color':        areaColorExpr('total_footprint_m2'),
+              'circle-radius':       CAMPUS_RADIUS,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': 'rgba(255,255,255,0.55)',
+              'circle-opacity':      0.88,
+            }}
+          />
+        </Source>
+
+        {/* Individual buildings — polygons + nodes, visible zoom 15+ */}
+        <Source id="buildings-source" type="geojson" data="/data/osm_datacenters.geojson">
+          <Layer
+            id="building-fills"
+            type="fill"
+            minzoom={15}
+            filter={IS_POLYGON}
+            paint={{
+              'fill-color':   areaColorExpr('footprint_m2'),
+              'fill-opacity': 0.55,
+            }}
+          />
+          <Layer
+            id="building-outlines"
+            type="line"
+            minzoom={15}
+            filter={IS_POLYGON}
+            paint={{
+              'line-color':   '#ffffff',
+              'line-width':   1.5,
+              'line-opacity': 0.75,
+            }}
+          />
+          {/* Selected building outline */}
+          <Layer
+            id="building-selected-outline"
+            type="line"
+            minzoom={15}
+            filter={['==', ['get', 'id'], selectedDC?.id ?? '']}
+            paint={{
+              'line-color': '#22c55e',
+              'line-width': 3,
+            }}
+          />
+          <Layer
+            id="building-nodes"
+            type="circle"
+            minzoom={15}
+            filter={IS_POINT_GEOM}
+            paint={{
+              'circle-color':        areaColorExpr('footprint_m2'),
+              'circle-radius':       6,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': '#ffffff',
+            }}
+          />
+        </Source>
+
+        {/* Simulation DC only — real DCs are now shown by campus/building layers */}
         <Source
           id="dc-source"
           type="geojson"
           data={dcGeoJSON}
-          cluster={true}
-          clusterMaxZoom={7}
-          clusterRadius={50}
+          cluster={false}
         >
-          <Layer id="dc-clusters"      type="circle" minzoom={DC_MIN_ZOOM} filter={IS_CLUSTER}  paint={CLUSTER_PAINT} />
-          <Layer id="dc-cluster-count" type="symbol" minzoom={DC_MIN_ZOOM} filter={IS_CLUSTER}  layout={CLUSTER_COUNT_LAYOUT} paint={CLUSTER_COUNT_PAINT} />
-          <Layer id="dc-ring"          type="circle" minzoom={DC_MIN_ZOOM} filter={IS_SELECTED} paint={DC_RING_PAINT} />
-          <Layer id="dc-points"        type="circle" minzoom={DC_MIN_ZOOM} filter={NOT_CLUSTER} paint={DC_POINT_PAINT} />
-          <Layer id="dc-sim-label"     type="symbol" minzoom={DC_MIN_ZOOM} filter={IS_SIM}      layout={DC_SIM_LABEL_LAYOUT} paint={DC_SIM_LABEL_PAINT} />
+          <Layer id="dc-ring"      type="circle" minzoom={DC_MIN_ZOOM} filter={IS_SELECTED} paint={DC_RING_PAINT} />
+          <Layer id="dc-points"    type="circle" minzoom={DC_MIN_ZOOM} filter={IS_SIM}      paint={DC_POINT_PAINT} />
+          <Layer id="dc-sim-label" type="symbol" minzoom={DC_MIN_ZOOM} filter={IS_SIM}      layout={DC_SIM_LABEL_LAYOUT} paint={DC_SIM_LABEL_PAINT} />
         </Source>
       </Map>
     </div>

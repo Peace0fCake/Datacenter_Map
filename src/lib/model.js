@@ -1,4 +1,5 @@
-import carbonData from '../data/carbonIntensity.json';
+import carbonData    from '../data/carbonIntensity.json';
+import dcPowerData  from '../data/dcPowerByCountry.json';
 
 // ── Operator calibration ─────────────────────────────────────────────────────
 // Real PUE and WUE from publicly available CSR / sustainability reports.
@@ -98,6 +99,27 @@ export function getCarbonData(countryCode) {
   return carbonData[countryCode] ?? { name: countryCode, intensity_gco2_kwh: 300, renewables_pct: 35, nuclear_pct: 0 };
 }
 
+// ── National DC power data (JRC 2023 / IEA) ─────────────────────────────────
+export function getCountryDCPower(countryCode) {
+  return dcPowerData[countryCode] ?? null;
+}
+
+/**
+ * Allocate a share of country-level DC electricity to one DC by footprint area.
+ * Returns MWh/year, or null if data is unavailable.
+ *
+ * @param {number}      footprintM2        This DC's footprint in m²
+ * @param {string}      countryCode        ISO 3166-1 alpha-2
+ * @param {object|null} countryStats       { total_footprint_m2 } from country_dc_stats.json
+ */
+export function allocateDCPower(footprintM2, countryCode, countryStats) {
+  if (!footprintM2 || !countryStats?.total_footprint_m2) return null;
+  const power = getCountryDCPower(countryCode);
+  if (!power) return null;
+  const share = footprintM2 / countryStats.total_footprint_m2;
+  return Math.round(power.twh * 1e6 * share);   // MWh/year
+}
+
 // ── Core model ───────────────────────────────────────────────────────────────
 /**
  * @param {object} params
@@ -108,13 +130,19 @@ export function getCarbonData(countryCode) {
  * @param {number|null} params.reportedPUE  from CSR report; overrides model
  * @param {number|null} params.reportedWUE  from CSR report; overrides model
  */
-export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryCode, reportedPUE = null, reportedWUE = null }) {
+export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryCode, reportedPUE = null, reportedWUE = null, totalEnergyMWhOverride = null }) {
   const pue = reportedPUE ?? estimatePUE(avgTempC);
   const wue = reportedWUE ?? estimateWUE(avgTempC);
 
-  const itEnergyMWh   = capacityMW * utilizationRate * 8760;
+  // If we have a country-level allocation, use it as total energy directly.
+  // Otherwise estimate from capacity × utilization × hours.
+  const itEnergyMWh   = totalEnergyMWhOverride
+    ? Math.round(totalEnergyMWhOverride / pue)
+    : capacityMW * utilizationRate * 8760;
   const itEnergyKWh   = itEnergyMWh * 1000;
-  const totalEnergyKWh = itEnergyKWh * pue;
+  const totalEnergyKWh = totalEnergyMWhOverride
+    ? totalEnergyMWhOverride * 1000
+    : itEnergyKWh * pue;
   const totalEnergyMWh = totalEnergyKWh / 1000;
   const coolingEnergyKWh = totalEnergyKWh - itEnergyKWh;
   const coolingRatio   = coolingEnergyKWh / totalEnergyKWh;

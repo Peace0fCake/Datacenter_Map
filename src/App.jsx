@@ -6,7 +6,7 @@ import { Legend } from './components/Legend';
 import { useDataCenters } from './hooks/useDataCenters';
 import { useClimateData } from './hooks/useClimateData';
 import { useWaterStress } from './hooks/useWaterStress';
-import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, groupDCsByCountry, getCarbonData } from './lib/model';
+import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, groupDCsByCountry, getCarbonData, allocateDCPower, getCountryDCPower } from './lib/model';
 import { reverseGeocodeCountry } from './hooks/useReverseGeocode';
 
 import './App.css';
@@ -16,6 +16,14 @@ let simCounter = 0;
 export default function App() {
   const [theme, setTheme] = useState('dark');
   const [activeLayer, setActiveLayer] = useState('none');
+  const [countryDCStats, setCountryDCStats] = useState({});
+
+  useEffect(() => {
+    fetch('/data/country_dc_stats.json')
+      .then(r => r.json())
+      .then(d => setCountryDCStats(d))
+      .catch(() => {});
+  }, []);
 
   const { dataCenters: osmDCs, loading: dcLoading, error: dcError } = useDataCenters();
   const { getAvgTemp } = useClimateData();
@@ -54,13 +62,22 @@ export default function App() {
     ]);
 
     const calibration = getOperatorCalibration(dc.operator);
-    const metrics = dc.capacityMW != null ? computeMetrics({
-      capacityMW: dc.capacityMW,
-      utilizationRate: utilizationFromMW(dc.capacityMW),
-      avgTempC: avgTempC ?? 12,
+
+    // Use area-based country allocation when available; fall back to capacity model
+    const allocatedMWh = allocateDCPower(
+      dc.footprintM2 ?? null,
       countryCode,
-      reportedPUE: calibration?.pue ?? null,
-      reportedWUE: calibration?.wue ?? null,
+      countryDCStats[countryCode] ?? null,
+    );
+
+    const metrics = (dc.capacityMW != null || allocatedMWh != null) ? computeMetrics({
+      capacityMW:            dc.capacityMW ?? 1,
+      utilizationRate:       utilizationFromMW(dc.capacityMW ?? 1),
+      avgTempC:              avgTempC ?? 12,
+      countryCode,
+      reportedPUE:           calibration?.pue ?? null,
+      reportedWUE:           calibration?.wue ?? null,
+      totalEnergyMWhOverride: allocatedMWh,
     }) : null;
 
     const enriched = {
@@ -80,7 +97,7 @@ export default function App() {
 
     setSelectedDC((prev) => (prev?.id === dc.id ? enriched : prev));
     enrichingRef.current.delete(dc.id);
-  }, [getAvgTemp, getWaterStress]);
+  }, [getAvgTemp, getWaterStress, countryDCStats]);
 
   // Remove the current simulated DC and cancel any in-flight enrichment for it
   const clearSimDC = useCallback(() => {
@@ -156,7 +173,12 @@ export default function App() {
     clearSimDC();
     selectedDCRef.current = null;
     setSelectedDC(null);
-    setSelectedCountry({ ...group, carbon: getCarbonData(code) });
+    setSelectedCountry({
+      ...group,
+      carbon:     getCarbonData(code),
+      dcPower:    getCountryDCPower(code),
+      osm:        countryDCStats[code] ?? null,
+    });
   }, [countryGroups, clearSimDC]);
 
   const allDCs = simDC ? [...enrichedDCs, simDC] : enrichedDCs;

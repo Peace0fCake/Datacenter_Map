@@ -1,0 +1,775 @@
+name,company,city,state,country,address,error_type,error_detail
+NAP de las Americas Madrid,Terremark,Madrid,,Spain,"Calle de Yecora, 4 28009 Madrid Spain",duplicate_dc,name+company appears 2× in dataset
+St. Leon-Rot,SAP,Sankt,,Germany,68789 Sankt Leon-Rot Germany +49 (0)6227 / 7-4747,phone_in_address,phone number found: '+49 (0)6227 / 7-4747'
+3 Foxboro Park,Digital Realty Trust,Redhill,,United Kingdom,"Foxborough Business Park, St. Annes Boulevard RH1 1AX Redhill United Kingdom",special_chars,non-printable chars in address: U+0092
+5 - Rugby,Sentrum,Rugby,,United Kingdom,tbc Rugby United Kingdom,placeholder,address looks like a stub: 'tbc Rugby United Kingdom'
+5 - Rugby,Sentrum,Rugby,,United Kingdom,tbc Rugby United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Rugby United Kingdom'
+Aalst,LCL NV,Aalst,,Belgium,tbc Aalst Belgium,placeholder,address looks like a stub: 'tbc Aalst Belgium'
+Aalst,LCL NV,Aalst,,Belgium,tbc Aalst Belgium,address_no_street,address appears to contain only zip/city/country: 'tbc Aalst Belgium'
+Adamant (UA),Adamant,Ukraine,,Ukraine,11 Leontovicha str. Kiev Ukraine,city_is_country,city field contains country name: 'Ukraine'
+ADC Core Network,Armenian Datacom Company (ADC),Armenia,,Armenia,13 1 H. Kochar Yerevan Armenia,city_is_country,city field contains country name: 'Armenia'
+AIC Data Center,AIC,Armenia,,Armenia,Isahakyan str 28 Yerevan Armenia,city_is_country,city field contains country name: 'Armenia'
+Albacete,Area Project Solutions S.L.,Albacete,,Spain,Albacete 02006 Albacete Spain,address_no_street,address appears to contain only zip/city/country: 'Albacete 02006 Albacete Spain'
+Almere,SoftLayer Technologies (IBM Cloud),Almere,,Netherlands,tbc Almere Netherlands,placeholder,address looks like a stub: 'tbc Almere Netherlands'
+Almere,SoftLayer Technologies (IBM Cloud),Almere,,Netherlands,tbc Almere Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Almere Netherlands'
+Amsterdam,EdgeConneX,Schiphol-Rijk,Nebraska,Netherlands,Koolhovenlaan 12 1119 NE Schiphol-Rijk Netherlands,duplicate_dc,name+company appears 3× in dataset
+Amsterdam,Dimension Data,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,Dimension Data,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,eFolder,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,eFolder,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,Digital Ocean,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,Digital Ocean,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,Criteo,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,Criteo,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,SoftLayer Technologies (IBM Cloud),Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,SoftLayer Technologies (IBM Cloud),Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,Perigon Networks,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam,Perigon Networks,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Amsterdam,EdgeConneX,1119,Nebraska,Netherlands,Koolhovenlaan 12 1119 NE Schiphol-Rijk Nederland,duplicate_dc,name+company appears 3× in dataset
+Amsterdam 2,CenturyLink,Amsterdam,,Netherlands,Joop Geesinkweg 401-404 1096 AX Amsterdam Netherlands,phone_in_address,phone number found: '401-404 1096'
+Amsterdam 2,Digital Ocean,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,placeholder,address looks like a stub: 'tbc Amsterdam Netherlands'
+Amsterdam 2,Digital Ocean,Amsterdam,,Netherlands,tbc Amsterdam Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Amsterdam Netherlands'
+Ankara,Global ?leti?im Hizmetleri A.?.,Turkey,,Turkey,"100 Yil Bulvari No:101, Ostim Ankara Turkey",city_is_country,city field contains country name: 'Turkey'
+Aubervilliers,LDCOM,Aubervilliers,,France,Avenue Jean Jaures 151-153 93300 Aubervilliers France,phone_in_address,phone number found: '151-153 93300'
+Baracska,KBC,Baracska,,Hungary,tbc Baracska Hungary,placeholder,address looks like a stub: 'tbc Baracska Hungary'
+Baracska,KBC,Baracska,,Hungary,tbc Baracska Hungary,address_no_street,address appears to contain only zip/city/country: 'tbc Baracska Hungary'
+Barcelona,Ackstorm,Spain,,Spain,"C/ Acer, 5-9 08038 Spain Spain",city_is_country,city field contains country name: 'Spain'
+Barcelona,Sagrada Família,Barcelona,,Spain,tbc Barcelona Spain,placeholder,address looks like a stub: 'tbc Barcelona Spain'
+Barcelona,Sagrada Família,Barcelona,,Spain,tbc Barcelona Spain,address_no_street,address appears to contain only zip/city/country: 'tbc Barcelona Spain'
+Barcelona,TATA Communications,Barcelona,,Spain,Barcelona Spain 6060 7070,address_no_street,address appears to contain only zip/city/country: 'Barcelona Spain 6060 7070'
+Basildon,ChunkyChips,Basildon,,United Kingdom,tbc SS14 3WN Basildon United Kingdom,placeholder,address looks like a stub: 'tbc SS14 3WN Basildon United Kingdom'
+Belgrade,Telekom Srbija,Serbia,,Serbia,Katićeva 14 Beograd Serbia,city_is_country,city field contains country name: 'Serbia'
+Beograd,VeratNet,Belgrade,,Montenegro,Bulevar vojvode Mii?a 37 11000 Belgrade Serbia and Montenegro,special_chars,non-printable chars in address: U+009A
+Beograd,VeratNet,Belgrade,,Montenegro,Bulevar vojvode Mii?a 37 11000 Belgrade Serbia and Montenegro,duplicate_dc,name+company appears 2× in dataset
+Berlin,Penta Berlin GmbH,Berlin,,Germany,Florastraße 133-136 12623 Berlin Germany,phone_in_address,phone number found: '133-136 12623'
+Berlin,NTT,+81-3-3500-8111,,Germany,Berlin Germany +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+BIT-1,BIT,BV,,Netherlands,Kelvinstraat 63 6716 BV Ede Nederland,duplicate_dc,name+company appears 2× in dataset
+BIT-2A,BIT,BP,,Netherlands,Galileïlaan 19 6716 BP Ede Nederland,duplicate_dc,name+company appears 2× in dataset
+BIT-2B,BIT,BP,,Netherlands,Galileïlaan 19 6716 BP Ede Nederland,duplicate_dc,name+company appears 2× in dataset
+BIT-2C,BIT,BP,,Netherlands,Galileïlaan 19 6716 BP Ede Nederland,duplicate_dc,name+company appears 2× in dataset
+BIT-2D,BIT,BK,,Netherlands,Galileïlaan 19 6716 BK Ede Nederland,duplicate_dc,name+company appears 2× in dataset
+Bratislava,CNC,Slovakia,,Slovakia,"Istrijská 26, Devínska Nová Ves Bratislava Slovakia",city_is_country,city field contains country name: 'Slovakia'
+Bratislava,Slovak Telecom,Slovakia,,Slovakia,Ra?ianska Street Bratislava Slovakia,city_is_country,city field contains country name: 'Slovakia'
+Bratislava 1,Sitel,106,,Czechia,Nad Elektrárnou 1526/45 106 00 Praha 10-Michle Czechia,placeholder,address looks like a stub: 'Nad Elektrárnou 1526/45 106 00 Praha 10-'
+Bratislava 1,Sitel,106,,Czechia,Nad Elektrárnou 1526/45 106 00 Praha 10-Michle Czechia,duplicate_dc,name+company appears 2× in dataset
+Brivibas,Lattelecom,Latvia,,Latvia,Brivibas iela 304 LV-1006 Jugla Latvia,city_is_country,city field contains country name: 'Latvia'
+Bucharest,M24Seven,Bucharest,,Romania,tbc Bucharest Romania,placeholder,address looks like a stub: 'tbc Bucharest Romania'
+Bucharest,M24Seven,Bucharest,,Romania,tbc Bucharest Romania,address_no_street,address appears to contain only zip/city/country: 'tbc Bucharest Romania'
+Bucharest,CHML Web Services,Bucharest,,Romania,Calea Rahovei 266-268 050912 Bucharest Romania,phone_in_address,phone number found: '266-268 050912'
+Budapest-Ilka,Invitel,Budapest,,Hungary,Ilka utca 31. B épület fsz. 1143 Budapest Hungary,special_chars,"non-printable chars in address: U+0094, U+0084"
+BVV,GTS Telecom SRL,Brno-střed-Pisárky,,Czechia,Výstaviště 405/1 64700 Brno-střed-Pisárky Czechia,duplicate_dc,name+company appears 2× in dataset
+Börfink,IT Vision Technology,Börfink,,Germany,tbc Börfink Germany,placeholder,address looks like a stub: 'tbc Börfink Germany'
+Börfink,IT Vision Technology,Börfink,,Germany,tbc Börfink Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Börfink Germany'
+Cambridge,Cambridge University,Cambridge,,United Kingdom,tbc Cambridge United Kingdom,placeholder,address looks like a stub: 'tbc Cambridge United Kingdom'
+Cambridge,Cambridge University,Cambridge,,United Kingdom,tbc Cambridge United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Cambridge United Kingdom'
+Cambridge,Telstra International,Cambridge,,United Kingdom,"St Johns Innovation Park, Cowley Road CB4 0WS Cambridge United Kingdom",special_chars,non-printable chars in address: U+0092
+CE Colo,CE Colo,106,,Czechia,Nad Elektrárnou 1428/47 106 00 Praha 10-Michle Czechia,placeholder,address looks like a stub: 'Nad Elektrárnou 1428/47 106 00 Praha 10-'
+CE Colo,CE Colo,106,,Czechia,Nad Elektrárnou 1428/47 106 00 Praha 10-Michle Czechia,duplicate_dc,name+company appears 2× in dataset
+Cellnex,JHJC Kort,GP,,Netherlands,Koos Postemalaan 1217 GP Hilversum Nederland,duplicate_dc,name+company appears 2× in dataset
+Centrs,Lattelecom,Latvia,,Latvia,Skanstes iela 13 LV-1013 Centrs Latvia,city_is_country,city field contains country name: 'Latvia'
+Chessington,VMware,Chessington,,United Kingdom,tbc Chessington United Kingdom,placeholder,address looks like a stub: 'tbc Chessington United Kingdom'
+Chessington,VMware,Chessington,,United Kingdom,tbc Chessington United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Chessington United Kingdom'
+ColoCenter Frankfurt am Main GmbH,ColoCenter Frankfurt am Main GmbH,Eschborn,,Germany,65760 Eschborn Germany +49 (0) 6196 77522,phone_in_address,phone number found: '+49 (0) 6196 77522'
+Contell,Contell,Moscow,,Russia,"Nauchniy proezd 20, 2 117246 Moscow Russia",placeholder,"address looks like a stub: 'Nauchniy proezd 20, 2 117246 Moscow Russ'"
+Cornaredo,SoftLayer Technologies (IBM Cloud),Cornaredo,,Italy,tbc Cornaredo Italy,placeholder,address looks like a stub: 'tbc Cornaredo Italy'
+Cornaredo,SoftLayer Technologies (IBM Cloud),Cornaredo,,Italy,tbc Cornaredo Italy,address_no_street,address appears to contain only zip/city/country: 'tbc Cornaredo Italy'
+CYMTV,CYMTV,LR,,Netherlands,Zebrastraat 9 3064 LR Rotterdam Nederland,duplicate_dc,name+company appears 2× in dataset
+Czech Republic,Aruba.it,384,,Czechia,38403 384 03 Ktiš Czechia,duplicate_dc,name+company appears 2× in dataset
+Databarn Rivium B.V,Databarn Rivium B.V,LK,,Netherlands,Rivium Boulevard 62 2909 LK Capelle aan den IJssel Nederland,duplicate_dc,name+company appears 2× in dataset
+Datacenter Groningen,Datacenter Groningen,Zuidbroek,,Netherlands,Beneluxweg 4 9636 HV Zuidbroek Netherlands,duplicate_dc,name+company appears 2× in dataset
+DataCenter Groningen,DataCenter Groningen,Zuidbroek,,Netherlands,Beneluxweg 22 9636HV Zuidbroek Netherlands,duplicate_dc,name+company appears 2× in dataset
+"Datacenter Kemi, Kemintulli",Invest inLapland,Kemi,,Finland,Kemi City Kemi Finland,address_no_street,address appears to contain only zip/city/country: 'Kemi City Kemi Finland'
+DataCenter LuzernZentralschweiz,CKW,Lucerne,,Switzerland,tbc Lucerne Switzerland,placeholder,address looks like a stub: 'tbc Lucerne Switzerland'
+DataCenter LuzernZentralschweiz,CKW,Lucerne,,Switzerland,tbc Lucerne Switzerland,address_no_street,address appears to contain only zip/city/country: 'tbc Lucerne Switzerland'
+"Datacenter Rovaniemi, Santa´s Datahouse",Invest inLapland,Rovaniemi,,Finland,Rovaniemi City Rovaniemi Finland,address_no_street,address appears to contain only zip/city/country: 'Rovaniemi City Rovaniemi Finland'
+Dataplace Brabant,Dataplace,RA,,Netherlands,Gragtmansstraat 1B 5145 RA Waalwijk Nederland,duplicate_dc,name+company appears 2× in dataset
+Dataplace Utrecht,Dataplace,BE,,Netherlands,Kon. Wilhelminaweg 471 3737 BE Groenekan Nederland,duplicate_dc,name+company appears 2× in dataset
+DC Bzenov,"Slovak Telekom, a.s.",Slovakia,,Slovakia,Bzenov Bzenov Slovakia,city_is_country,city field contains country name: 'Slovakia'
+DC Jarosova,"Slovak Telekom, a.s.",Slovakia,,Slovakia,Jarosova 1 830 08 Bratislava Slovakia,city_is_country,city field contains country name: 'Slovakia'
+DC Kosice,"Slovak Telekom, a.s.",Slovakia,,Slovakia,Polska 4 Kosice Slovakia,city_is_country,city field contains country name: 'Slovakia'
+DC Tajov,"Slovak Telekom, a.s.",Slovakia,,Slovakia,Tajov Tajov Slovakia,city_is_country,city field contains country name: 'Slovakia'
+DC Tower,CRA (Ceske Radiokomunikace),130,,Czechia,Mahlerovy sady 2699/1 130 00 Praha 3-Žižkov Czechia,duplicate_dc,name+company appears 2× in dataset
+DEG Kilcarbery Dublin,Data Electronics,Dublin,,Ireland,"7, Kilcarbery Business Park, New Nangor Road 22 Dublin Ireland",duplicate_dc,name+company appears 2× in dataset
+DEG Kilcarbery Dublin,Data Electronics,Dublin,,Ireland,Kilcarbery Business Park Dublin Ireland,duplicate_dc,name+company appears 2× in dataset
+Doetinchem,ISP Services (CleanPort BV),Doetinchem,,Netherlands,Gildenbroederslaan 1 7005 BM Doetinchem Netherlands,duplicate_dc,name+company appears 2× in dataset
+Doetinchem,ISP Services (CleanPort BV),Doetinchem,,Netherlands,Gildenbroederslaan 1 7005 BM Doetinchem Netherlands,duplicate_dc,name+company appears 2× in dataset
+Dublin,Zendesk,Dublin,,Ireland,tbc Dublin Ireland,placeholder,address looks like a stub: 'tbc Dublin Ireland'
+Dublin,Zendesk,Dublin,,Ireland,tbc Dublin Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Dublin Ireland'
+Dublin,Oath,Dublin,,Ireland,tbc Dublin Ireland,placeholder,address looks like a stub: 'tbc Dublin Ireland'
+Dublin,Oath,Dublin,,Ireland,tbc Dublin Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Dublin Ireland'
+Dublin,Microsoft,22,,Ireland,Nangor Rd Dublin 22 Ireland,placeholder,address looks like a stub: 'Nangor Rd Dublin 22 Ireland'
+Dublin 2,Sleepless,22,,Ireland,Nangor Rd Dublin 22 Ireland,placeholder,address looks like a stub: 'Nangor Rd Dublin 22 Ireland'
+Dubrovka 3,Selectel,Dubrovka,,Russia,tbc Dubrovka Russia,placeholder,address looks like a stub: 'tbc Dubrovka Russia'
+Dubrovka 3,Selectel,Dubrovka,,Russia,tbc Dubrovka Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Dubrovka Russia'
+e-Quest,e-Quest,Helmond,,Netherlands,Schootense Dreef 5708 Helmond Nederland,duplicate_dc,name+company appears 2× in dataset
+EdcNet,EdcNet,Craiova,,Romania,Str. Popoveni Nr 5 Craiova Romania,duplicate_dc,name+company appears 2× in dataset
+EdcNet,EdcNet,Craiova,,Romania,Str. Popoveni Nr 5 Craiova Romania,duplicate_dc,name+company appears 2× in dataset
+Eemshaven,Google,Eemshaven,,Netherlands,Weg Spijk-Eemshaven Eemshaven Netherlands,duplicate_dc,name+company appears 2× in dataset
+Eemshaven,Google,TA,,Netherlands,Oostpolder 4 9909 TA Eemshaven Nederland,duplicate_dc,name+company appears 2× in dataset
+Ekaterinburg,Rostelecom,999-82-83,,Russia,Yekaterinburg Russia +7 (499) 999-82-83,phone_in_address,phone number found: '+7 (499) 999-82-83'
+Elion telehouse,Elion,Estonia,,Estonia,Sole 14D Tallinn Estonia,city_is_country,city field contains country name: 'Estonia'
+Empoli,Sesa,Empoli,,Italy,tbc Empoli Italy,placeholder,address looks like a stub: 'tbc Empoli Italy'
+Empoli,Sesa,Empoli,,Italy,tbc Empoli Italy,address_no_street,address appears to contain only zip/city/country: 'tbc Empoli Italy'
+Equinix AM4,Equinix,Amsterdam,,Netherlands,Science Park 610 1098 Amsterdam Netherlands,duplicate_dc,name+company appears 3× in dataset
+Equinix AM4,Equinix,XH,,Netherlands,Science Park 610 1098 XH Amsterdam Nederland,duplicate_dc,name+company appears 3× in dataset
+Erdem Murat Ünal,Erdem Murat Ünal,Turkey,,Turkey,İstanbul caddesi Ovaakça mahallesi no:750\1 Osmangazi\Bursa Bursa Turkey,city_is_country,city field contains country name: 'Turkey'
+Eskilstuna,Amazon,+1-206-266-1000,,Sweden,Eskilstuna Sweden +1-206-266-1000,phone_in_address,phone number found: '+1-206-266-1000'
+Espoo,Tieto,Espoo,,Finland,tbc Espoo Finland,placeholder,address looks like a stub: 'tbc Espoo Finland'
+Espoo,Tieto,Espoo,,Finland,tbc Espoo Finland,address_no_street,address appears to contain only zip/city/country: 'tbc Espoo Finland'
+Falun,EcoDataCenter,Falun,,Sweden,tbc Falun Sweden,placeholder,address looks like a stub: 'tbc Falun Sweden'
+Falun,EcoDataCenter,Falun,,Sweden,tbc Falun Sweden,address_no_street,address appears to contain only zip/city/country: 'tbc Falun Sweden'
+Florence 1,Hosting Solutions,Florence,,Italy,tbc Florence Italy,placeholder,address looks like a stub: 'tbc Florence Italy'
+Florence 1,Hosting Solutions,Florence,,Italy,tbc Florence Italy,address_no_street,address appears to contain only zip/city/country: 'tbc Florence Italy'
+Fortis,DataVita,Lanarkshire,,United Kingdom,tbc Lanarkshire United Kingdom,placeholder,address looks like a stub: 'tbc Lanarkshire United Kingdom'
+Fortis,DataVita,Lanarkshire,,United Kingdom,tbc Lanarkshire United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Lanarkshire United Kingdom'
+Franfurt,Tieto,Frankfurt,,Germany,Frankfurt Germany +358 207 2010,phone_in_address,phone number found: '+358 207 2010'
+Franfurt,Tieto,Frankfurt,,Germany,Frankfurt Germany +358 207 2010,address_no_street,address appears to contain only zip/city/country: 'Frankfurt Germany +358 207 2010'
+Frankfurt,HostForLIFE.eu,Frankfurt,,Germany,tbc Frankfurt Germany,placeholder,address looks like a stub: 'tbc Frankfurt Germany'
+Frankfurt,HostForLIFE.eu,Frankfurt,,Germany,tbc Frankfurt Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Frankfurt Germany'
+Frankfurt,Zendesk,Frankfurt,,Germany,tbc Frankfurt Germany,placeholder,address looks like a stub: 'tbc Frankfurt Germany'
+Frankfurt,Zendesk,Frankfurt,,Germany,tbc Frankfurt Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Frankfurt Germany'
+Frankfurt,Digital Ocean,Frankfurt,,Germany,N/A 60549 Frankfurt am Main Germany,placeholder,address looks like a stub: 'N/A 60549 Frankfurt am Main Germany'
+Frankfurt,CenturyLink,Frankfurt,,Germany,Kleyerstrasse 82 60326 Frankfurt am Main Germany,duplicate_dc,name+company appears 2× in dataset
+Frankfurt,Thinking Phone Networks,Main,,Germany,tbc Frankfurt am Main Germany,placeholder,address looks like a stub: 'tbc Frankfurt am Main Germany'
+Frankfurt,InGo,Main,,Germany,tbc Frankfurt am Main Germany,placeholder,address looks like a stub: 'tbc Frankfurt am Main Germany'
+Frankfurt,NextPointHost,Main,,Germany,tbc Frankfurt am Main Germany,placeholder,address looks like a stub: 'tbc Frankfurt am Main Germany'
+Frankfurt,CenturyLink,Frankfurt,,Germany,Russelsheimerstrasse 22 60326 Frankfurt am Main Germany,duplicate_dc,name+company appears 2× in dataset
+Frankfurt,Oracle,Main,,Germany,tbc Frankfurt am Main Germany,placeholder,address looks like a stub: 'tbc Frankfurt am Main Germany'
+Frankfurt,TATA Communications,Frankfurt,,Germany,Frankfurt Germany 6060 7070,address_no_street,address appears to contain only zip/city/country: 'Frankfurt Germany 6060 7070'
+Frankfurt,OVH,Frankfurt,,Germany,Frankfurt Germany 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Frankfurt Germany 020 7357 6616'
+Frankfurt,INAP (Internap Corporation),1-877-843-7627,,Germany,Frankfurt Germany 1-877-843-7627,phone_in_address,phone number found: '877-843-7627'
+Frankfurt 1,NTT,+81-3-3500-8111,,Germany,Frankfurt Germany +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+Frankfurt 2,Equinix,Frankfurt,,Germany,Kruppstraße 121-127 60388 Frankfurt am Main Germany,phone_in_address,phone number found: '121-127 60388'
+Frankfurt 3,NTT,Rüsselsheim,,Germany,65428 Rüsselsheim Germany +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+Frankfurt 4,e-shelter services GmbH,7801-2110,,Germany,Hattersheim am Main Germany +49 69 7801-2110,phone_in_address,phone number found: '+49 69 7801-2110'
+Frauenfeld,Swiss Government,Frauenfeld,,Switzerland,tbc Frauenfeld Switzerland,placeholder,address looks like a stub: 'tbc Frauenfeld Switzerland'
+Frauenfeld,Swiss Government,Frauenfeld,,Switzerland,tbc Frauenfeld Switzerland,address_no_street,address appears to contain only zip/city/country: 'tbc Frauenfeld Switzerland'
+Galileo Paris,Galileo Connect,d'Europe,,France,tbc Val d'Europe France,placeholder,"address looks like a stub: ""tbc Val d'Europe France"""
+Ghent,Base,Ghent,,Belgium,tbc Ghent Belgium,placeholder,address looks like a stub: 'tbc Ghent Belgium'
+Ghent,Base,Ghent,,Belgium,tbc Ghent Belgium,address_no_street,address appears to contain only zip/city/country: 'tbc Ghent Belgium'
+Global-e Datacenter,Global-e Datacenter,LJ,,Netherlands,Haansbergseweg 12 5121 LJ Rijen Nederland,duplicate_dc,name+company appears 2× in dataset
+GLOBE Datacenter,GLOBE Datacenter B.V.,LX,,Netherlands,Ravelijncenter 23 1785 LX Den Helder Nederland,duplicate_dc,name+company appears 2× in dataset
+GNC-Alfa Abovyan,GNC-Alfa,Armenia,,Armenia,Khaghaghutyan 1 Abovyan Armenia,city_is_country,city field contains country name: 'Armenia'
+GNC-Alfa Yerevan,GNC-Alfa,Armenia,,Armenia,Tigran Mets 4 Yerevan Armenia,city_is_country,city field contains country name: 'Armenia'
+Gravelines 2,OVH,Gravelines,,France,Gravelines France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Gravelines France 020 7357 6616'
+Greenfield,Entra Eiendom AS,Oslo,,Norway,tbc Oslo Norway,placeholder,address looks like a stub: 'tbc Oslo Norway'
+Greenfield,Entra Eiendom AS,Oslo,,Norway,tbc Oslo Norway,address_no_street,address appears to contain only zip/city/country: 'tbc Oslo Norway'
+Grid Telekom Ankara,Grid Telekomünikasyon Hizmetleri A.S,Turkey,,Turkey,Ogulbey Mah. Konya Yolu 30.km Golbasi Ankara Turkey,city_is_country,city field contains country name: 'Turkey'
+Grizinkalns,DEAC,Latvia,,Latvia,J??a Asara iela 24 Grizinkalns Latvia,city_is_country,city field contains country name: 'Latvia'
+Guernsey,Continent 8 Technologies,Guernsey,,United Kingdom,Guernsey United Kingdom +44 1624 678 888,phone_in_address,phone number found: '+44 1624 678 888'
+Guernsey,Continent 8 Technologies,Guernsey,,United Kingdom,Guernsey United Kingdom +44 1624 678 888,city_is_country,city field contains country name: 'Guernsey'
+Guernsey,Continent 8 Technologies,Guernsey,,United Kingdom,Guernsey United Kingdom +44 1624 678 888,address_no_street,address appears to contain only zip/city/country: 'Guernsey United Kingdom +44 1624 678 888'
+Guernsey Data Park,Long Port Group,Guernsey,,United Kingdom,Saltpans Road Guernsey United Kingdom,city_is_country,city field contains country name: 'Guernsey'
+Halfweg,euNetworks,Halfweg,,Netherlands,Haarlemmerstraatweg 133-135 1165 NK Halfweg Netherlands,phone_in_address,phone number found: '133-135 1165'
+Halfweg (Haarlemmerstraatweg),Cogent Communications Inc.,Halfweg,,Netherlands,Haarlemmerstraatweg 133-135 1165 MK Halfweg Netherlands,phone_in_address,phone number found: '133-135 1165'
+Hamburg,CenturyLink,Hamburg,,Germany,Wendenstrasse 375 Hamburg Germany,duplicate_dc,name+company appears 2× in dataset
+Hamburg,CenturyLink,Hamburg,,Germany,Süderstrasse 198 20537 Hamburg Germany,duplicate_dc,name+company appears 2× in dataset
+Hasselt,Cegeka,Hasselt,,Belgium,tbc Hasselt Belgium,placeholder,address looks like a stub: 'tbc Hasselt Belgium'
+Hasselt,Cegeka,Hasselt,,Belgium,tbc Hasselt Belgium,address_no_street,address appears to contain only zip/city/country: 'tbc Hasselt Belgium'
+iGlass London,Katalyst,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+iGlass London,Katalyst,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+InterDC Enschede Marssteden,InterDC,TD,,Netherlands,Marssteden 110 7547 TD Enschede Nederland,duplicate_dc,name+company appears 2× in dataset
+InterDC Hengelo,InterDC,KW,,Netherlands,Sherwood Rangers 1 7551 KW Hengelo Nederland,duplicate_dc,name+company appears 2× in dataset
+Iomart Manchester,iomart,Manchester,,United Kingdom,tbc M15 5RL Manchester United Kingdom,placeholder,address looks like a stub: 'tbc M15 5RL Manchester United Kingdom'
+Irkutsk,En+ Group,Irkutsk,,Russia,tbc Irkutsk Russia,placeholder,address looks like a stub: 'tbc Irkutsk Russia'
+Irkutsk,En+ Group,Irkutsk,,Russia,tbc Irkutsk Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Irkutsk Russia'
+Istanbul,Grid Telekom,Turkey,,Turkey,Ayazmadere Cad 12/2 Fulya Istanbul Turkey,city_is_country,city field contains country name: 'Turkey'
+Istanbul,Vodafone Group Plc,Turkey,,Turkey,Buyukdere Caddesi 112 Istanbul Turkey,city_is_country,city field contains country name: 'Turkey'
+ITD Network SA Core Colocation center,Cooolbox,Sofia,,Bulgaria,tbc 1000 Sofia Bulgaria,placeholder,address looks like a stub: 'tbc 1000 Sofia Bulgaria'
+ITD Network SA Core Colocation center,Cooolbox,Sofia,,Bulgaria,tbc 1000 Sofia Bulgaria,address_no_street,address appears to contain only zip/city/country: 'tbc 1000 Sofia Bulgaria'
+Kaleju,Lattelecom,Latvia,,Latvia,Kaleju iela 48 LV-1050 Centrs Latvia,city_is_country,city field contains country name: 'Latvia'
+Kamzik,"Slovak Telekom, a.s.",Slovakia,,Slovakia,Cesta na kamzik 14 831 01 Bratislava Slovakia,city_is_country,city field contains country name: 'Slovakia'
+Katrineholm,Amazon,+1-206-266-1000,,Sweden,Katrineholm Sweden +1-206-266-1000,phone_in_address,phone number found: '+1-206-266-1000'
+Kazan,Rostelecom,999-82-83,,Russia,Kazan Russia +7 (499) 999-82-83,phone_in_address,phone number found: '+7 (499) 999-82-83'
+Keldisa,Lattelecom,Latvia,,Latvia,Keldia iela 18 LV-1021 Plavnieki Latvia,special_chars,non-printable chars in address: U+009A
+Keldisa,Lattelecom,Latvia,,Latvia,Keldia iela 18 LV-1021 Plavnieki Latvia,city_is_country,city field contains country name: 'Latvia'
+Kevlavik,Verne Global,Iceland,,Iceland,Valhallarbraut 868 235 Reykjanesbær (Ásbrú) Iceland,city_is_country,city field contains country name: 'Iceland'
+Khabarovsk,Rostelecom,999-82-83,,Russia,Khabarovsk Russia +7 (499) 999-82-83,phone_in_address,phone number found: '+7 (499) 999-82-83'
+Kharkov,SteepHost DC-UA,Ukraine,,Ukraine,Mironosickaya 76 Kharkov Ukraine,city_is_country,city field contains country name: 'Ukraine'
+Kiev 2,De Novo,Ukraine,,Ukraine,tbc Kiev Ukraine,placeholder,address looks like a stub: 'tbc Kiev Ukraine'
+Kiev 2,De Novo,Ukraine,,Ukraine,tbc Kiev Ukraine,city_is_country,city field contains country name: 'Ukraine'
+Kleisti,Lattelecom,Latvia,,Latvia,Kleistu iela 5 LV-1067 Imanta Latvia,city_is_country,city field contains country name: 'Latvia'
+Koksární,GTS Telecom SRL,702,,Czechia,Koksární 1097/7 702 00 Moravská Ostrava a Přívoz Czechia,duplicate_dc,name+company appears 2× in dataset
+Korzo Karlin Prague,Dial Telecom,Prague,,Czechia,K?iíkova 237/36a 18600 Prague Czech Republic,special_chars,non-printable chars in address: U+009E
+Krasnodar,Mobile Telesystems (MTS),Krasnodar,,Russia,tbc Krasnodar Russia,placeholder,address looks like a stub: 'tbc Krasnodar Russia'
+Krasnodar,Mobile Telesystems (MTS),Krasnodar,,Russia,tbc Krasnodar Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Krasnodar Russia'
+Krasnoyarsk,En+ Group,Krasnoyarsk,,Russia,tbc Krasnoyarsk Russia,placeholder,address looks like a stub: 'tbc Krasnoyarsk Russia'
+Krasnoyarsk,En+ Group,Krasnoyarsk,,Russia,tbc Krasnoyarsk Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Krasnoyarsk Russia'
+KTIŠ,"INTERNET CZ, a.s.",Republic,,Czechia,Kti 2 384 03 Ktiš Czech Republic,special_chars,non-printable chars in address: U+009A
+La Ciotat,BICS SA/NV,Ciotat,,France,Avenue de la Coriandre 14 13600 La Ciotat France,duplicate_dc,name+company appears 2× in dataset
+La Ciotat,BICS SA/NV,Ciotat,,France,110 Avenue de la Coriandre 13600 La Ciotat France,duplicate_dc,name+company appears 2× in dataset
+La Corunna,Inditex,Corunna,,Spain,tbc La Corunna Spain,placeholder,address looks like a stub: 'tbc La Corunna Spain'
+La Rioja 2,Arsys Internet S.L.,Logroño,,Spain,tbc Logroño Spain,placeholder,address looks like a stub: 'tbc Logroño Spain'
+La Rioja 2,Arsys Internet S.L.,Logroño,,Spain,tbc Logroño Spain,address_no_street,address appears to contain only zip/city/country: 'tbc Logroño Spain'
+LDCOM Caen,LDCOM,Caen,,France,tbc 14000 Caen France,placeholder,address looks like a stub: 'tbc 14000 Caen France'
+LDCOM Caen,LDCOM,Caen,,France,tbc 14000 Caen France,address_no_street,address appears to contain only zip/city/country: 'tbc 14000 Caen France'
+LDCOM Cesson,LDCOM,Cesson,,France,tbc 35510 Cesson Sevigné France,placeholder,address looks like a stub: 'tbc 35510 Cesson Sevigné France'
+LDCOM Rouen,LDCOM,Saint,,France,tbc 76800 Saint Etienne du Rouvray France,placeholder,address looks like a stub: 'tbc 76800 Saint Etienne du Rouvray Franc'
+Leeds,Host Europe Group,Leeds,,United Kingdom,tbc Leeds United Kingdom,placeholder,address looks like a stub: 'tbc Leeds United Kingdom'
+Leeds,Host Europe Group,Leeds,,United Kingdom,tbc Leeds United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Leeds United Kingdom'
+Leeds,Computacenter,Leeds,,United Kingdom,tbc LS10 1RJ Leeds United Kingdom,placeholder,address looks like a stub: 'tbc LS10 1RJ Leeds United Kingdom'
+Leuven,Cegeka,Leuven,,Belgium,tbc Leuven Belgium,placeholder,address looks like a stub: 'tbc Leuven Belgium'
+Leuven,Cegeka,Leuven,,Belgium,tbc Leuven Belgium,address_no_street,address appears to contain only zip/city/country: 'tbc Leuven Belgium'
+Linz,Linz AG Telekom,Linz,,Austria,tbc Linz Austria,placeholder,address looks like a stub: 'tbc Linz Austria'
+Linz,Linz AG Telekom,Linz,,Austria,tbc Linz Austria,address_no_street,address appears to contain only zip/city/country: 'tbc Linz Austria'
+Lisbon,"NFSi Telecom, Lda.",Lisbon,,Portugal,tbc Lisbon Portugal,placeholder,address looks like a stub: 'tbc Lisbon Portugal'
+Lisbon,"NFSi Telecom, Lda.",Lisbon,,Portugal,tbc Lisbon Portugal,address_no_street,address appears to contain only zip/city/country: 'tbc Lisbon Portugal'
+Lisbon,DOTSI,Lisbon,,Portugal,tbc Lisbon Portugal,placeholder,address looks like a stub: 'tbc Lisbon Portugal'
+Lisbon,DOTSI,Lisbon,,Portugal,tbc Lisbon Portugal,address_no_street,address appears to contain only zip/city/country: 'tbc Lisbon Portugal'
+Ljubljana,TU TELEKOM,Ljubljana,,Slovenia,martinska 106 1000 Ljubljana Slovenia,special_chars,non-printable chars in address: U+008A
+London,SoftLayer Technologies (IBM Cloud),Chessington,,United Kingdom,tbc Chessington United Kingdom,placeholder,address looks like a stub: 'tbc Chessington United Kingdom'
+London,SoftLayer Technologies (IBM Cloud),Chessington,,United Kingdom,tbc Chessington United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Chessington United Kingdom'
+London,Digital Ocean,London,,United Kingdom,N/A CR7 6JD London United Kingdom,placeholder,address looks like a stub: 'N/A CR7 6JD London United Kingdom'
+London,Fpweb.net,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,Fpweb.net,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,Gazprom Space Systems,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,Gazprom Space Systems,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,LoadSpring Solutions,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,LoadSpring Solutions,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,Datatech UK,London,,United Kingdom,tbc E17 London United Kingdom,placeholder,address looks like a stub: 'tbc E17 London United Kingdom'
+London,Latisys,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,Latisys,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,InetServices,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,InetServices,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,CDS Complete Discovery Source,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,CDS Complete Discovery Source,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,LogicMonitor,London,,United Kingdom,tbc London United Kingdom,placeholder,address looks like a stub: 'tbc London United Kingdom'
+London,LogicMonitor,London,,United Kingdom,tbc London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc London United Kingdom'
+London,Iron Mountain,800-935-6966,,United Kingdom,SL1 4PF Slough United Kingdom 800-935-6966,phone_in_address,phone number found: '800-935-6966'
+London,OVH,London,,United Kingdom,London UK 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'London UK 020 7357 6616'
+London,ServerChoice Data Centres (SCDC),London,,United Kingdom,N1 6BY London UK 01438 532 300,phone_in_address,phone number found: '438 532 300'
+London 1,Continent 8 Technologies,London,,United Kingdom,London United Kingdom +44 1624 678 888,phone_in_address,phone number found: '+44 1624 678 888'
+London 1,Continent 8 Technologies,London,,United Kingdom,London United Kingdom +44 1624 678 888,address_no_street,address appears to contain only zip/city/country: 'London United Kingdom +44 1624 678 888'
+London Three,Zenium Technology Partners Limited,London,,United Kingdom,SL1 4PF London UK +44 (0)20 3667 8440,phone_in_address,phone number found: '+44 (0)20 3667 8440'
+London Two,Zenium Technology Partners Limited,Uxbridge,,United Kingdom,UB11 1FW Uxbridge UK +44 (0)20 3667 8440,phone_in_address,phone number found: '+44 (0)20 3667 8440'
+Londonderry,Atlas Communications Ltd.,Londonderry,,Ireland,tbc Londonderry Ireland,placeholder,address looks like a stub: 'tbc Londonderry Ireland'
+Londonderry,Atlas Communications Ltd.,Londonderry,,Ireland,tbc Londonderry Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Londonderry Ireland'
+LPC ITT centre,Technology and Innovation Center,Lithuania,,Lithuania,A. Juozapavi?iaus str. 13 LT-09311 Vilnius Lithuania,city_is_country,city field contains country name: 'Lithuania'
+Luton,Monarch Aircraft Engineering Ltd.,Luton,,United Kingdom,tbc Luton United Kingdom,placeholder,address looks like a stub: 'tbc Luton United Kingdom'
+Luton,Monarch Aircraft Engineering Ltd.,Luton,,United Kingdom,tbc Luton United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Luton United Kingdom'
+Lyon,CFI,Lyon,,France,tbc Lyon France,placeholder,address looks like a stub: 'tbc Lyon France'
+Lyon,CFI,Lyon,,France,tbc Lyon France,address_no_street,address appears to contain only zip/city/country: 'tbc Lyon France'
+M25 Periphery,Everest Data Centres,London,,United Kingdom,M25 London United Kingdom,address_no_street,address appears to contain only zip/city/country: 'M25 London United Kingdom'
+Madrid,inAsset Networks,Madrid,,Spain,tbc Madrid Spain,placeholder,address looks like a stub: 'tbc Madrid Spain'
+Madrid,inAsset Networks,Madrid,,Spain,tbc Madrid Spain,address_no_street,address appears to contain only zip/city/country: 'tbc Madrid Spain'
+Madrid 2,NTT,+81-3-3500-8111,,Spain,Madrid Spain +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+Malaga,Malaga Data Center,Fuengirola,,Spain,tbc 29640 Fuengirola Spain,placeholder,address looks like a stub: 'tbc 29640 Fuengirola Spain'
+Malaga,Malaga Data Center,Fuengirola,,Spain,tbc 29640 Fuengirola Spain,address_no_street,address appears to contain only zip/city/country: 'tbc 29640 Fuengirola Spain'
+Manchester,Gazprom Space Systems,Manchester,,United Kingdom,tbc Manchester United Kingdom,placeholder,address looks like a stub: 'tbc Manchester United Kingdom'
+Manchester,Gazprom Space Systems,Manchester,,United Kingdom,tbc Manchester United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Manchester United Kingdom'
+Marseille 3,Interxion,Marseille,,France,to be confirmed 13226 Marseille France,placeholder,address looks like a stub: 'to be confirmed 13226 Marseille France'
+Meath,Facebook,Meath,,Ireland,tbc Meath Ireland,placeholder,address looks like a stub: 'tbc Meath Ireland'
+Meath,Facebook,Meath,,Ireland,tbc Meath Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Meath Ireland'
+MEZON,Unknown,Moldova,,Moldova,Moscovei bd. 21 Chisinau Moldova,city_is_country,city field contains country name: 'Moldova'
+Middenmeer,Microsoft,Middenmeer,,Netherlands,Agriport 601 1775TK Middenmeer Netherlands,duplicate_dc,name+company appears 2× in dataset
+Middenmeer,Microsoft,TK,,Netherlands,Agriport 601 1775 TK Middenmeer Nederland,duplicate_dc,name+company appears 2× in dataset
+Milan,Fastweb,Milan,,Italy,tbc Milan Italy,placeholder,address looks like a stub: 'tbc Milan Italy'
+Milan,Fastweb,Milan,,Italy,tbc Milan Italy,address_no_street,address appears to contain only zip/city/country: 'tbc Milan Italy'
+Milan,ASPHostPortal.com Web Services,Cornaredo,,Italy,"Via Monzoro, 101-105 20010 Cornaredo Italy",phone_in_address,phone number found: '101-105 20010'
+Milan Campus,DATA4,Cornaredo,,Italy,Via Monzoro 101-105 20010 Cornaredo Italy,phone_in_address,phone number found: '101-105 20010'
+Milton Keynes,Ashgoal,Keynes,,United Kingdom,tbc Milton Keynes United Kingdom,placeholder,address looks like a stub: 'tbc Milton Keynes United Kingdom'
+Minsk,Datahata,Belarus,,Belarus,"Sharangovicha street, 19 Minsk Belarus",city_is_country,city field contains country name: 'Belarus'
+Moscow,Unknown,Moscow,,Russia,33g Moscow Russia,address_no_street,address appears to contain only zip/city/country: '33g Moscow Russia'
+Moscow,WebDC,Moscow,,Russia,"Nagornaya, 2, Himki 141400 Moscow Russia",placeholder,"address looks like a stub: 'Nagornaya, 2, Himki 141400 Moscow Russia'"
+Moscow,Mobile Telesystems (MTS),Moscow,,Russia,tbc Moscow Russia,placeholder,address looks like a stub: 'tbc Moscow Russia'
+Moscow,Mobile Telesystems (MTS),Moscow,,Russia,tbc Moscow Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Moscow Russia'
+Moscow,DataPro,Moscow,,Russia,tbc Moscow Russia,placeholder,address looks like a stub: 'tbc Moscow Russia'
+Moscow,DataPro,Moscow,,Russia,tbc Moscow Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Moscow Russia'
+Moscow 2,DataPro,Moscow,,Russia,tbc Moscow Russia,placeholder,address looks like a stub: 'tbc Moscow Russia'
+Moscow 2,DataPro,Moscow,,Russia,tbc Moscow Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Moscow Russia'
+Moscow One Datacentre,IXcellerate,Moscow,,Russia,Altufevskoya Shosse Moscow Russia,special_chars,non-printable chars in address: U+0092
+Munich,Oracle,Munich,,Germany,tbc Munich Germany,placeholder,address looks like a stub: 'tbc Munich Germany'
+Munich,Oracle,Munich,,Germany,tbc Munich Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Munich Germany'
+Munich,AlixPartners,Munich,,Germany,tbc Munich Germany,placeholder,address looks like a stub: 'tbc Munich Germany'
+Munich,AlixPartners,Munich,,Germany,tbc Munich Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Munich Germany'
+Munich 2,NTT,+81-3-3500-8111,,Germany,Munich Germany +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+Murcia,KIO Networks,Murcia,,Spain,tbc Murcia Spain,placeholder,address looks like a stub: 'tbc Murcia Spain'
+Murcia,KIO Networks,Murcia,,Spain,tbc Murcia Spain,address_no_street,address appears to contain only zip/city/country: 'tbc Murcia Spain'
+Nagano,GTS Telecom SRL,Czechia,,Czechia,U Nákladového nádraží 130 00 Strašnice Czechia,city_is_country,city field contains country name: 'Czechia'
+Nagano,GTS Telecom SRL,Czechia,,Czechia,U Nákladového nádraží 130 00 Strašnice Czechia,duplicate_dc,name+company appears 2× in dataset
+Nagano O2,Telefonica O2,Republic,,Czechia,ikov Prague Czech Republic,special_chars,"non-printable chars in address: U+009E, U+008E"
+Nakana ApS,Nakana ApS,Vestbjerg,,Denmark,Blomsterbakken 2 9380 Vestbjerg Denmark,duplicate_dc,name+company appears 2× in dataset
+Nakana ApS,Nakana ApS,Nørresundby,,Denmark,Bøgildsmindevej 7 9400 Nørresundby Denmark,duplicate_dc,name+company appears 2× in dataset
+NAP de las Americas Madrid,Terremark,Madrid,,Spain,"Yecora, 4 Pol. Mercedes 28022 Madrid Spain",duplicate_dc,name+company appears 2× in dataset
+"Napier Way, Principle Park, Crawley Building 1",Digital Realty Trust,Crawley,,United Kingdom,"Napier Way, Crawley Building 1 RH10 Crawley UK",placeholder,"address looks like a stub: 'Napier Way, Crawley Building 1 RH10 Craw'"
+Naritaweg 52,Digital Realty Trust,Amsterdam,,Netherlands,Naritaweg 52 1043 BZ Amsterdam Netherlands,placeholder,address looks like a stub: 'Naritaweg 52 1043 BZ Amsterdam Netherlan'
+Neckarsulm,Fujitsu Global,Neckarsulm,,Germany,tbc Neckarsulm Germany,placeholder,address looks like a stub: 'tbc Neckarsulm Germany'
+Neckarsulm,Fujitsu Global,Neckarsulm,,Germany,tbc Neckarsulm Germany,address_no_street,address appears to contain only zip/city/country: 'tbc Neckarsulm Germany'
+Netcenter - Villers-Le-Bouillet (Huy),Proximus,Villers-le-Bouillet,,Belgium,tbc Villers-le-Bouillet Belgium,placeholder,address looks like a stub: 'tbc Villers-le-Bouillet Belgium'
+Netcenter - Villers-Le-Bouillet (Huy),Proximus,Villers-le-Bouillet,,Belgium,tbc Villers-le-Bouillet Belgium,address_no_street,address appears to contain only zip/city/country: 'tbc Villers-le-Bouillet Belgium'
+Neuenstadt am Kocher,Fujitsu Global,Kocher,,Germany,tbc Neuenstadt am Kocher Germany,placeholder,address looks like a stub: 'tbc Neuenstadt am Kocher Germany'
+Neutal,Atos,Neutal,,Austria,Neutal Neutal Austria,address_no_street,address appears to contain only zip/city/country: 'Neutal Neutal Austria'
+NewColo Frankfurt,NewColo,Frankfurt,,Germany,Mainzer Landstrasse 351-353 60326 Frankfurt am Main Germany,phone_in_address,phone number found: '351-353 60326'
+Newtownmountkennedy,Ecologic Datacenters,Newtownmountkennedy,,Ireland,tbc Newtownmountkennedy Ireland,placeholder,address looks like a stub: 'tbc Newtownmountkennedy Ireland'
+Newtownmountkennedy,Ecologic Datacenters,Newtownmountkennedy,,Ireland,tbc Newtownmountkennedy Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Newtownmountkennedy Ireland'
+Nicosia,Confisio,Cyprus,,Cyprus,tbc CY-2223 Nicosia Cyprus,placeholder,address looks like a stub: 'tbc CY-2223 Nicosia Cyprus'
+Nicosia,Confisio,Cyprus,,Cyprus,tbc CY-2223 Nicosia Cyprus,city_is_country,city field contains country name: 'Cyprus'
+Nizhny-Novgorod,Mobile Telesystems (MTS),Nizhny-Novgorod,,Russia,tbc Nizhny-Novgorod Russia,placeholder,address looks like a stub: 'tbc Nizhny-Novgorod Russia'
+Nizhny-Novgorod,Mobile Telesystems (MTS),Nizhny-Novgorod,,Russia,tbc Nizhny-Novgorod Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Nizhny-Novgorod Russia'
+North West,Electricity North West,West,,United Kingdom,tbc North West United Kingdom,placeholder,address looks like a stub: 'tbc North West United Kingdom'
+Nottingham,Compass Plus,Nottingham,,United Kingdom,tbc Nottingham United Kingdom,placeholder,address looks like a stub: 'tbc Nottingham United Kingdom'
+Nottingham,Compass Plus,Nottingham,,United Kingdom,tbc Nottingham United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Nottingham United Kingdom'
+Novosibirsk,Mobile Telesystems (MTS),Novosibirsk,,Russia,tbc Novosibirsk Russia,placeholder,address looks like a stub: 'tbc Novosibirsk Russia'
+Novosibirsk,Mobile Telesystems (MTS),Novosibirsk,,Russia,tbc Novosibirsk Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Novosibirsk Russia'
+Novosibrisk,Rostelecom,999-82-83,,Russia,Novosibirsk Russia +7 (499) 999-82-83,phone_in_address,phone number found: '+7 (499) 999-82-83'
+Nuremberg 1,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,placeholder,address looks like a stub: 'tbc 90429 Nuremberg Germany'
+Nuremberg 1,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,address_no_street,address appears to contain only zip/city/country: 'tbc 90429 Nuremberg Germany'
+Nuremberg 2,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,placeholder,address looks like a stub: 'tbc 90429 Nuremberg Germany'
+Nuremberg 2,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,address_no_street,address appears to contain only zip/city/country: 'tbc 90429 Nuremberg Germany'
+Nuremberg 3,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,placeholder,address looks like a stub: 'tbc 90429 Nuremberg Germany'
+Nuremberg 3,Core-Backbone GmbH,Nuremberg,,Germany,tbc 90429 Nuremberg Germany,address_no_street,address appears to contain only zip/city/country: 'tbc 90429 Nuremberg Germany'
+Oslo,Webspesialisten,Oslo,,Norway,tbc 0356 Oslo Norway,placeholder,address looks like a stub: 'tbc 0356 Oslo Norway'
+Oslo,Webspesialisten,Oslo,,Norway,tbc 0356 Oslo Norway,address_no_street,address appears to contain only zip/city/country: 'tbc 0356 Oslo Norway'
+Pantin,Criteo,Pantin,,France,tbc Pantin France,placeholder,address looks like a stub: 'tbc Pantin France'
+Pantin,Criteo,Pantin,,France,tbc Pantin France,address_no_street,address appears to contain only zip/city/country: 'tbc Pantin France'
+Paphos,PrimeTel PLC,Cyprus,,Cyprus,tbc Paphos Cyprus,placeholder,address looks like a stub: 'tbc Paphos Cyprus'
+Paphos,PrimeTel PLC,Cyprus,,Cyprus,tbc Paphos Cyprus,city_is_country,city field contains country name: 'Cyprus'
+Paralimni,MTN,Cyprus,,Cyprus,Kennedy Ave 87 Paralimni Cyprus,city_is_country,city field contains country name: 'Cyprus'
+Paris,SoftLayer Technologies (IBM Cloud),Paris,,France,tbc Paris France,placeholder,address looks like a stub: 'tbc Paris France'
+Paris,SoftLayer Technologies (IBM Cloud),Paris,,France,tbc Paris France,address_no_street,address appears to contain only zip/city/country: 'tbc Paris France'
+Paris,Criteo,Paris,,France,tbc Paris France,placeholder,address looks like a stub: 'tbc Paris France'
+Paris,Criteo,Paris,,France,tbc Paris France,address_no_street,address appears to contain only zip/city/country: 'tbc Paris France'
+Paris,Kroll Ontrack,Paris,,France,tbc Paris France,placeholder,address looks like a stub: 'tbc Paris France'
+Paris,Kroll Ontrack,Paris,,France,tbc Paris France,address_no_street,address appears to contain only zip/city/country: 'tbc Paris France'
+Paris 1,OVH,Paris,,France,Paris France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Paris France 020 7357 6616'
+Paris 3,OVH,Paris,,France,Paris France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Paris France 020 7357 6616'
+Picardie,Ikoula,Picardie,,France,tbc Picardie France,placeholder,address looks like a stub: 'tbc Picardie France'
+Picardie,Ikoula,Picardie,,France,tbc Picardie France,address_no_street,address appears to contain only zip/city/country: 'tbc Picardie France'
+Prague (5.kvetna),T-Systems International GmbH,140,,Czechia,5. května 1640/65 140 00 Praha 4-Nusle Czechia,duplicate_dc,name+company appears 2× in dataset
+Prague - former national telecom hub,Telefonica O2,Prague,,Czechia,Olanská 2681/6 Prague Czech Republic,special_chars,non-printable chars in address: U+009A
+Profile Park,Digital Realty Trust,22,,Ireland,Nangor Rd Dublin 22 Ireland,placeholder,address looks like a stub: 'Nangor Rd Dublin 22 Ireland'
+Project Marie,Nixdoft Data Center (NDC),Munich,,Germany,Munich Germany +49 89 9545 377 10,phone_in_address,phone number found: '+49 89 9545 377 10'
+ProxiCenter Aix Marseille,TDF,Les,,France,8 route de la Tour dArbois 13290 Les Milles France,special_chars,non-printable chars in address: U+0092
+PVT,GTS Telecom SRL,616,,Czechia,Veveří 2581/102 616 00 Brno-Žabovřesky Czechia,duplicate_dc,name+company appears 2× in dataset
+Ramonville,NFrance,Ramonville,,France,Ramonville 31520 Ramonville France,address_no_street,address appears to contain only zip/city/country: 'Ramonville 31520 Ramonville France'
+Reading,InTechnology,Reading,,United Kingdom,"Commensus House, 3  5 Worton Drive RG2 0TG Reading United Kingdom",special_chars,non-printable chars in address: U+0096
+Rechenzentrum München,MIVITEC GmbH,Sinzing,,Germany,Eichenstr. 24 93161 Sinzing b. Regensburg Germany,duplicate_dc,name+company appears 3× in dataset
+Rechenzentrum München,MIVITEC GmbH,Munich,,Germany,Martin-Kollar-Straße 4 81829 Munich Germany,duplicate_dc,name+company appears 3× in dataset
+Rechenzentrum München,MIVITEC GmbH,Munich,,Germany,Wamslerstr. 4 81829 Munich Germany,duplicate_dc,name+company appears 3× in dataset
+Redditch,Datatech UK,Redditch,,United Kingdom,tbc Redditch United Kingdom,placeholder,address looks like a stub: 'tbc Redditch United Kingdom'
+Redditch,Datatech UK,Redditch,,United Kingdom,tbc Redditch United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Redditch United Kingdom'
+Riga,AlphaHost.lv,Latvia,,Latvia,Elijas 17 LV-1050 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga,Telenet,Latvia,,Latvia,Raunas 44 LV1039 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga,Versija,Latvia,,Latvia,Dzirnavu 89 LV-1011 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga,Nano IT SIA,Latvia,,Latvia,Brivibas street 214M-2 LV-1039 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga,IZZI,Latvia,,Latvia,Perses iela 2 LV-1011 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga (Dzelzavas),Viasat,Latvia,,Latvia,Dzelzavas iela 120 LV-1021 Rīga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga (Lielvardes iela),Telia Latvija,Latvia,,Latvia,Lielvārdes iela 8A LV-1006 Rīga Latvia,city_is_country,city field contains country name: 'Latvia'
+Riga (Maskavas),Viasat,Latvia,,Latvia,Maskavas iela 322 LV-1063 Rīga Latvia,city_is_country,city field contains country name: 'Latvia'
+Rjukan,Green Mountain Data Centre,Rjukan,,Norway,Rjukan Rjukan Norway,address_no_street,address appears to contain only zip/city/country: 'Rjukan Rjukan Norway'
+Rome,Fastweb,Rome,,Italy,tbc Rome Italy,placeholder,address looks like a stub: 'tbc Rome Italy'
+Rome,Fastweb,Rome,,Italy,tbc Rome Italy,address_no_street,address appears to contain only zip/city/country: 'tbc Rome Italy'
+Rome,Aruba.it,Rome,,Italy,Rome Italy +39 0575 0501,phone_in_address,phone number found: '+39 0575 0501'
+Rome,Aruba.it,Rome,,Italy,Rome Italy +39 0575 0501,address_no_street,address appears to contain only zip/city/country: 'Rome Italy +39 0575 0501'
+Roosendaal,Hewlett Packard (HP),Roosendaal,,Netherlands,tbc Roosendaal Netherlands,placeholder,address looks like a stub: 'tbc Roosendaal Netherlands'
+Roosendaal,Hewlett Packard (HP),Roosendaal,,Netherlands,tbc Roosendaal Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Roosendaal Netherlands'
+Rotterdam 1,SmartDC B.V.,3044,British Columbia,Netherlands,Van Nelleweg 1 3044 BC Rotterdam Nederland,duplicate_dc,name+company appears 2× in dataset
+Roubaix 6,OVH,Roubaix,,France,59100 Roubaix France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: '59100 Roubaix France 020 7357 6616'
+Samara,Megafon,Samara,,Russia,tbc Samara Russia,placeholder,address looks like a stub: 'tbc Samara Russia'
+Samara,Megafon,Samara,,Russia,tbc Samara Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Samara Russia'
+Samara,Mobile Telesystems (MTS),Samara,,Russia,tbc Samara Russia,placeholder,address looks like a stub: 'tbc Samara Russia'
+Samara,Mobile Telesystems (MTS),Samara,,Russia,tbc Samara Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Samara Russia'
+SDC,GTS Telecom SRL,106,,Czechia,Nad Elektrárnou 1428/47 106 00 Praha 10-Michle Czechia,placeholder,address looks like a stub: 'Nad Elektrárnou 1428/47 106 00 Praha 10-'
+SDC,GTS Telecom SRL,106,,Czechia,Nad Elektrárnou 1428/47 106 00 Praha 10-Michle Czechia,duplicate_dc,name+company appears 2× in dataset
+Serbia BroadBand,Serbia BroadBand,Belgrade,,Montenegro,Bulevar Zorana Djindjica 8a 11070 Belgrade Serbia and Montenegro,duplicate_dc,name+company appears 2× in dataset
+Shannon,Genworth,Shannon,,Ireland,tbc Shannon Ireland,placeholder,address looks like a stub: 'tbc Shannon Ireland'
+Shannon,Genworth,Shannon,,Ireland,tbc Shannon Ireland,address_no_street,address appears to contain only zip/city/country: 'tbc Shannon Ireland'
+Sigmanet Data Centre,Sigma Net,Latvia,,Latvia,Raina blvd. 29 LV-1459 Riga Latvia,city_is_country,city field contains country name: 'Latvia'
+Sirius Satellite Services Latvija,SES S.A.,Latvia,,Latvia,Zaķusalas krastmala 3 LV-1050 Rīga Latvia,city_is_country,city field contains country name: 'Latvia'
+Sittard-Geleen,Cegeka,Sittard-Geleen,,Netherlands,tbc Sittard-Geleen Netherlands,placeholder,address looks like a stub: 'tbc Sittard-Geleen Netherlands'
+Sittard-Geleen,Cegeka,Sittard-Geleen,,Netherlands,tbc Sittard-Geleen Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Sittard-Geleen Netherlands'
+SIX SI Ljubljana Technology Park,SIX SI,Ljubljana,,Slovenia,Tehnoloki park 19 1000 Ljubljana Slovenia,special_chars,non-printable chars in address: U+009A
+Skopje,Telesmart,Skopje,,North Macedonia,Vojvodina br. 4 1000 Skopje Macedonia,duplicate_dc,name+company appears 2× in dataset
+Slough,Tsohost,Slough,,United Kingdom,tbc Slough United Kingdom,placeholder,address looks like a stub: 'tbc Slough United Kingdom'
+Slough,Tsohost,Slough,,United Kingdom,tbc Slough United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Slough United Kingdom'
+Slough 1,NTT,+81-3-3500-8111,,United Kingdom,Slough United Kingdom +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+SloughIX,Network-I,Slough,,United Kingdom,tbc SL2 5EP Slough United Kingdom,placeholder,address looks like a stub: 'tbc SL2 5EP Slough United Kingdom'
+Sochi,Megafon,Sochi,,Russia,tbc Sochi Russia,placeholder,address looks like a stub: 'tbc Sochi Russia'
+Sochi,Megafon,Sochi,,Russia,tbc Sochi Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Sochi Russia'
+Solihull,Solihull Metropolitan Borough Council,Solihull,,United Kingdom,tbc Solihull United Kingdom,placeholder,address looks like a stub: 'tbc Solihull United Kingdom'
+Solihull,Solihull Metropolitan Borough Council,Solihull,,United Kingdom,tbc Solihull United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Solihull United Kingdom'
+SRCE,Sveu?ilini ra?unski centar Srce (SRCE),Croatia,,Croatia,Josipa Marohnica 5 Zagreb Croatia,city_is_country,city field contains country name: 'Croatia'
+Stockholm,City Network Hosting AB,Stockholm,,Sweden,tbc Stockholm Sweden,placeholder,address looks like a stub: 'tbc Stockholm Sweden'
+Stockholm,City Network Hosting AB,Stockholm,,Sweden,tbc Stockholm Sweden,address_no_street,address appears to contain only zip/city/country: 'tbc Stockholm Sweden'
+Strasbourg,OVH,Strasbourg,,France,Strasbourg France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Strasbourg France 020 7357 6616'
+Strasbourg,Datadock,Strasbourg,,France,tbc Strasbourg France,placeholder,address looks like a stub: 'tbc Strasbourg France'
+Strasbourg,Datadock,Strasbourg,,France,tbc Strasbourg France,address_no_street,address appears to contain only zip/city/country: 'tbc Strasbourg France'
+Strasbourg 2,OVH,Strasbourg,,France,Strasbourg France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Strasbourg France 020 7357 6616'
+Strasbourg 3,OVH,Strasbourg,,France,Strasbourg France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Strasbourg France 020 7357 6616'
+Strasbourg 4,OVH,Strasbourg,,France,Strasbourg France 020 7357 6616,address_no_street,address appears to contain only zip/city/country: 'Strasbourg France 020 7357 6616'
+Surrey,Nexcess,Byfleet,,United Kingdom,tbc Byfleet United Kingdom,placeholder,address looks like a stub: 'tbc Byfleet United Kingdom'
+Surrey,Nexcess,Byfleet,,United Kingdom,tbc Byfleet United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Byfleet United Kingdom'
+Tallinn,Data Valley Enterprises,Estonia,,Estonia,tbc Tallinn Estonia,placeholder,address looks like a stub: 'tbc Tallinn Estonia'
+Tallinn,Data Valley Enterprises,Estonia,,Estonia,tbc Tallinn Estonia,city_is_country,city field contains country name: 'Estonia'
+Tbilisi,BitFury,Georgia,,Georgia,Gldani District Tbilisi Georgia,city_is_country,city field contains country name: 'Georgia'
+Telekom DataCenter,"Slovak Telekom, a.s.",Bratislava,,Slovakia,Varavská 24/A 83102 Bratislava Slovakia,special_chars,non-printable chars in address: U+009A
+Telford,Xerox,Telford,,United Kingdom,tbc Telford United Kingdom,placeholder,address looks like a stub: 'tbc Telford United Kingdom'
+Telford,Xerox,Telford,,United Kingdom,tbc Telford United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Telford United Kingdom'
+THDGlobal2,Regie Gaz Electricite,Bonneville,,France,tbc 74130 Bonneville France,placeholder,address looks like a stub: 'tbc 74130 Bonneville France'
+THDGlobal2,Regie Gaz Electricite,Bonneville,,France,tbc 74130 Bonneville France,address_no_street,address appears to contain only zip/city/country: 'tbc 74130 Bonneville France'
+The Node Pole 2,KnC Miner,Boden,,Sweden,tbc Boden Sweden,placeholder,address looks like a stub: 'tbc Boden Sweden'
+The Node Pole 2,KnC Miner,Boden,,Sweden,tbc Boden Sweden,address_no_street,address appears to contain only zip/city/country: 'tbc Boden Sweden'
+Thor Data Center,Advania Data Centres,Iceland,,Iceland,Steinhella 10 221 Hafnarfjordur Iceland,city_is_country,city field contains country name: 'Iceland'
+THP,GTS Telecom SRL,Czechia,,Czechia,Vinohradská 190 130 00 Praha 3 Czechia,city_is_country,city field contains country name: 'Czechia'
+THP,GTS Telecom SRL,Czechia,,Czechia,Vinohradská 190 130 00 Praha 3 Czechia,duplicate_dc,name+company appears 2× in dataset
+Top Net Kiev,Top NET,Ukraine,,Ukraine,Leontovich Street 9 Kiev Ukraine,city_is_country,city field contains country name: 'Ukraine'
+TOPNET/UA/Krivonosa27,TOPNET,Kiev,,Ukraine,tbc 03037 Kiev Ukraine,placeholder,address looks like a stub: 'tbc 03037 Kiev Ukraine'
+TOPNET/UA/Krivonosa27,TOPNET,Kiev,,Ukraine,tbc 03037 Kiev Ukraine,address_no_street,address appears to contain only zip/city/country: 'tbc 03037 Kiev Ukraine'
+TOPNET/UA/Leontovicha9,TOPNET,Ukraine,,Ukraine,9 Leontovicha street Kiev Ukraine,city_is_country,city field contains country name: 'Ukraine'
+Toulouse,INRA,Toulouse,,France,tbc Toulouse France,placeholder,address looks like a stub: 'tbc Toulouse France'
+Toulouse,INRA,Toulouse,,France,tbc Toulouse France,address_no_street,address appears to contain only zip/city/country: 'tbc Toulouse France'
+Trappes,SFR,Trappes,,France,tbc Trappes France,placeholder,address looks like a stub: 'tbc Trappes France'
+Trappes,SFR,Trappes,,France,tbc Trappes France,address_no_street,address appears to contain only zip/city/country: 'tbc Trappes France'
+Törökbálint,KBC,Törökbálint,,Hungary,tbc Törökbálint Hungary,placeholder,address looks like a stub: 'tbc Törökbálint Hungary'
+Törökbálint,KBC,Törökbálint,,Hungary,tbc Törökbálint Hungary,address_no_street,address appears to contain only zip/city/country: 'tbc Törökbálint Hungary'
+Ucomline Kiev,Ucomline (Digital Generation),Ukraine,,Ukraine,"Leontovicha 9, Building 3 Kiev Ukraine",city_is_country,city field contains country name: 'Ukraine'
+UK Data Center,Applied Systems,Portsmouth,,United Kingdom,tbc Portsmouth United Kingdom,placeholder,address looks like a stub: 'tbc Portsmouth United Kingdom'
+UK Data Center,Applied Systems,Portsmouth,,United Kingdom,tbc Portsmouth United Kingdom,address_no_street,address appears to contain only zip/city/country: 'tbc Portsmouth United Kingdom'
+Valdemara,Lattelecom,Latvia,,Latvia,Valdemara iela 110 LV-1013 Sarkandaugava Latvia,city_is_country,city field contains country name: 'Latvia'
+Varna Data Center,Varna Data Center,Varna,,Bulgaria,128 8 Primorski Polk blvd. 9000 Varna Bulgaria,special_chars,"non-printable chars in address: U+0094, U+0093"
+Vasteras,Amazon,+1-206-266-1000,,Sweden,Västerås Sweden +1-206-266-1000,phone_in_address,phone number found: '+1-206-266-1000'
+Vedomosti,SAP,Vedomosti,,Russia,tbc Vedomosti Russia,placeholder,address looks like a stub: 'tbc Vedomosti Russia'
+Vedomosti,SAP,Vedomosti,,Russia,tbc Vedomosti Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Vedomosti Russia'
+Vienna South,Atos,Vienna,,Austria,tbc Vienna Austria,placeholder,address looks like a stub: 'tbc Vienna Austria'
+Vienna South,Atos,Vienna,,Austria,tbc Vienna Austria,address_no_street,address appears to contain only zip/city/country: 'tbc Vienna Austria'
+Vilnius,Data Inn,Lithuania,,Lithuania,tbc 20km south of Vilnius Lithuania,placeholder,address looks like a stub: 'tbc 20km south of Vilnius Lithuania'
+Vilnius,Data Inn,Lithuania,,Lithuania,tbc 20km south of Vilnius Lithuania,city_is_country,city field contains country name: 'Lithuania'
+Vilnius,Duomenu Logistikos Centras,Lithuania,,Lithuania,tbc Vilnius Lithuania,placeholder,address looks like a stub: 'tbc Vilnius Lithuania'
+Vilnius,Duomenu Logistikos Centras,Lithuania,,Lithuania,tbc Vilnius Lithuania,city_is_country,city field contains country name: 'Lithuania'
+Vilnius,Baltic Data Center,Vilnius,,Lithuania,irm?n? g. 141 09128 Vilnius Lithuania,special_chars,non-printable chars in address: U+008E
+Vilnius 8,"TEO LT, AB Group",Lithuania,,Lithuania,tbc Vilnius Lithuania,placeholder,address looks like a stub: 'tbc Vilnius Lithuania'
+Vilnius 8,"TEO LT, AB Group",Lithuania,,Lithuania,tbc Vilnius Lithuania,city_is_country,city field contains country name: 'Lithuania'
+Vipnet Zagreb,Vipnet,Croatia,,Croatia,Vrtni put 1 HR-10000 Zagreb Croatia,city_is_country,city field contains country name: 'Croatia'
+Vitrigailos 11,HOSTEX,Lithuania,,Lithuania,vitrigailos 11 Vilnius Lithuania,special_chars,non-printable chars in address: U+008A
+Vitrigailos 11,HOSTEX,Lithuania,,Lithuania,vitrigailos 11 Vilnius Lithuania,city_is_country,city field contains country name: 'Lithuania'
+Vladivostok,Mobile Telesystems (MTS),Vladivostok,,Russia,tbc Vladivostok Russia,placeholder,address looks like a stub: 'tbc Vladivostok Russia'
+Vladivostok,Mobile Telesystems (MTS),Vladivostok,,Russia,tbc Vladivostok Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Vladivostok Russia'
+Wigner Data Center,CERN,Budapest,,Hungary,tbc Budapest Hungary,placeholder,address looks like a stub: 'tbc Budapest Hungary'
+Wigner Data Center,CERN,Budapest,,Hungary,tbc Budapest Hungary,address_no_street,address appears to contain only zip/city/country: 'tbc Budapest Hungary'
+Wnet,Wnet,Ukraine,,Ukraine,"Vladimirska str, 52 Kiev Ukraine",city_is_country,city field contains country name: 'Ukraine'
+Wnet-2 Kiev,Wnet,Ukraine,,Ukraine,Pochayninska str. 25/49 Kiev Ukraine,city_is_country,city field contains country name: 'Ukraine'
+Woerden,Switch Datacenters,Woerden,,Netherlands,tbc Woerden Netherlands,placeholder,address looks like a stub: 'tbc Woerden Netherlands'
+Woerden,Switch Datacenters,Woerden,,Netherlands,tbc Woerden Netherlands,address_no_street,address appears to contain only zip/city/country: 'tbc Woerden Netherlands'
+Woking,NTT,+81-3-3500-8111,,United Kingdom,Woking United Kingdom +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+XEM,GTS Telecom SRL,702,,Czechia,Na Desátém 2275/2 702 00 Moravská Ostrava a Přívoz Czechia,placeholder,address looks like a stub: 'Na Desátém 2275/2 702 00 Moravská Ostrav'
+XEM,GTS Telecom SRL,702,,Czechia,Na Desátém 2275/2 702 00 Moravská Ostrava a Přívoz Czechia,duplicate_dc,name+company appears 2× in dataset
+Yukari Dudullu Organize Sanayi Bolgesi,Global ?leti?im Hizmetleri A.?.,Turkey,,Turkey,NATO Yolu 4. Cad. No:15 Umraniye Istanbul Turkey,placeholder,address looks like a stub: 'NATO Yolu 4. Cad. No:15 Umraniye Istanbu'
+Yukari Dudullu Organize Sanayi Bolgesi,Global ?leti?im Hizmetleri A.?.,Turkey,,Turkey,NATO Yolu 4. Cad. No:15 Umraniye Istanbul Turkey,city_is_country,city field contains country name: 'Turkey'
+Zagreb,T-Hrvatski Telekom,Croatia,,Croatia,tbc Zagreb Croatia,placeholder,address looks like a stub: 'tbc Zagreb Croatia'
+Zagreb,T-Hrvatski Telekom,Croatia,,Croatia,tbc Zagreb Croatia,city_is_country,city field contains country name: 'Croatia'
+Zelenograd,AyEmTi,Zelenograd,,Russia,tbc Zelenograd Russia,placeholder,address looks like a stub: 'tbc Zelenograd Russia'
+Zelenograd,AyEmTi,Zelenograd,,Russia,tbc Zelenograd Russia,address_no_street,address appears to contain only zip/city/country: 'tbc Zelenograd Russia'
+Zurich,NTT,+81-3-3500-8111,,Switzerland,Rümlang Switzerland +81-3-3500-8111,phone_in_address,phone number found: '+81-3-3500-8111'
+Europort,Sapphire Networks Limited,,,Gibraltar,,empty_address,address field is blank
+Europort,Sapphire Networks Limited,,,Gibraltar,,empty_city,both address and city are blank — no location data
+Gibraltar,Gibtelecom,,,Gibraltar,,empty_address,address field is blank
+Gibraltar,Gibtelecom,,,Gibraltar,,empty_city,both address and city are blank — no location data
+Hellas Sat,Thomas Kalamaris,,,Greece,,empty_address,address field is blank
+Hellas Sat,Thomas Kalamaris,,,Greece,,empty_city,both address and city are blank — no location data
+CyrusOne PAR1 - Paris,CyrusOne,,,France,,empty_address,address field is blank
+CyrusOne PAR1 - Paris,CyrusOne,,,France,,empty_city,both address and city are blank — no location data
+Châteauroux,Google,,,France,,empty_address,address field is blank
+Châteauroux,Google,,,France,,empty_city,both address and city are blank — no location data
+Prosoluce SG1,Prosoluce,,,France,,empty_address,address field is blank
+Prosoluce SG1,Prosoluce,,,France,,empty_city,both address and city are blank — no location data
+TDF Datacenter Paris Fort de Romainville,TDF,,,France,,empty_address,address field is blank
+TDF Datacenter Paris Fort de Romainville,TDF,,,France,,empty_city,both address and city are blank — no location data
+Blue - Chateaubourg,Blue,,,France,,empty_address,address field is blank
+Blue - Chateaubourg,Blue,,,France,,empty_city,both address and city are blank — no location data
+TDF Datacenter Rennes Cesson,TDF,,,France,,empty_address,address field is blank
+TDF Datacenter Rennes Cesson,TDF,,,France,,empty_city,both address and city are blank — no location data
+TDF Datacenter Lille Lambersart,TDF,,,France,,empty_address,address field is blank
+TDF Datacenter Lille Lambersart,TDF,,,France,,empty_city,both address and city are blank — no location data
+TDF Datacenter Bordeaux Bouliac,TDF,,,France,,empty_address,address field is blank
+TDF Datacenter Bordeaux Bouliac,TDF,,,France,,empty_city,both address and city are blank — no location data
+TDF Datacenter Aix Marseille,TDF,,,France,,empty_address,address field is blank
+TDF Datacenter Aix Marseille,TDF,,,France,,empty_city,both address and city are blank — no location data
+Halli,NxtVN,,,Finland,,empty_address,address field is blank
+Halli,NxtVN,,,Finland,,empty_city,both address and city are blank — no location data
+Kajaani,XTX Markets,,,Finland,,empty_address,address field is blank
+Kajaani,XTX Markets,,,Finland,,empty_city,both address and city are blank — no location data
+Server Farm,Server Farm OÜ,,,Estonia,,empty_address,address field is blank
+Server Farm,Server Farm OÜ,,,Estonia,,empty_city,both address and city are blank — no location data
+EU North Riga LV DC3,Delska,,,Latvia,,empty_address,address field is blank
+EU North Riga LV DC3,Delska,,,Latvia,,empty_city,both address and city are blank — no location data
+EU North Riga LV DC2,Delska,,,Latvia,,empty_address,address field is blank
+EU North Riga LV DC2,Delska,,,Latvia,,empty_city,both address and city are blank — no location data
+Bornasco,Microsoft,,,Italy,,empty_address,address field is blank
+Bornasco,Microsoft,,,Italy,,empty_city,both address and city are blank — no location data
+GIGANET DC,GIGANET Internet Szolgáltató Kft,,,Hungary,,empty_address,address field is blank
+GIGANET DC,GIGANET Internet Szolgáltató Kft,,,Hungary,,empty_city,both address and city are blank — no location data
+Globalhost Data Center,Globalhost d.o.o.,,,Bosnia and Herzegovina,,empty_address,address field is blank
+Globalhost Data Center,Globalhost d.o.o.,,,Bosnia and Herzegovina,,empty_city,both address and city are blank — no location data
+Data Center iHost.al,iHost.AL,,,Albania,,empty_address,address field is blank
+Data Center iHost.al,iHost.AL,,,Albania,,empty_city,both address and city are blank — no location data
+Fredericia,Google,,,Denmark,,empty_address,address field is blank
+Fredericia,Google,,,Denmark,,empty_city,both address and city are blank — no location data
+Esbjerg,Meta,,,Denmark,,empty_address,address field is blank
+Esbjerg,Meta,,,Denmark,,empty_city,both address and city are blank — no location data
+Zaragoza 1,Tillion Data Centers,,,Spain,,empty_address,address field is blank
+Zaragoza 1,Tillion Data Centers,,,Spain,,empty_city,both address and city are blank — no location data
+Algete Spain,AVAIO Digital Partners,,,Spain,,empty_address,address field is blank
+Algete Spain,AVAIO Digital Partners,,,Spain,,empty_city,both address and city are blank — no location data
+SoleBlanca,Soleblanca SA,,,Switzerland,,empty_address,address field is blank
+SoleBlanca,Soleblanca SA,,,Switzerland,,empty_city,both address and city are blank — no location data
+Strängnäs,Brookfield Infrastructure Partners LP,,,Sweden,,empty_address,address field is blank
+Strängnäs,Brookfield Infrastructure Partners LP,,,Sweden,,empty_city,both address and city are blank — no location data
+Rockan 1,Rockan Data Center AB,,,Sweden,,empty_address,address field is blank
+Rockan 1,Rockan Data Center AB,,,Sweden,,empty_city,both address and city are blank — no location data
+AWS Eskilstuna,Amazon,,,Sweden,,empty_address,address field is blank
+AWS Eskilstuna,Amazon,,,Sweden,,empty_city,both address and city are blank — no location data
+Stockholm (Finspångsgatan),Verizon,,,Sweden,,empty_address,address field is blank
+Stockholm (Finspångsgatan),Verizon,,,Sweden,,empty_city,both address and city are blank — no location data
+Serbia BroadBand,Serbia BroadBand,,,Serbia,,empty_address,address field is blank
+Serbia BroadBand,Serbia BroadBand,,,Serbia,,empty_city,both address and city are blank — no location data
+Beograd,VeratNet,,,Serbia,,empty_address,address field is blank
+Beograd,VeratNet,,,Serbia,,empty_city,both address and city are blank — no location data
+Monaco DC3,Monaco Telecom,,,Monaco,,empty_address,address field is blank
+Monaco DC3,Monaco Telecom,,,Monaco,,empty_city,both address and city are blank — no location data
+Equinix  AM1,Equinix,,,Netherlands,,empty_address,address field is blank
+Equinix  AM1,Equinix,,,Netherlands,,empty_city,both address and city are blank — no location data
+Skopje,Telesmart,,,North Macedonia,,empty_address,address field is blank
+Skopje,Telesmart,,,North Macedonia,,empty_city,both address and city are blank — no location data
+LKW Kollokation TZ Eschen,Unknown,,,Liechtenstein,,empty_address,address field is blank
+LKW Kollokation TZ Eschen,Unknown,,,Liechtenstein,,empty_city,both address and city are blank — no location data
+kyberna DataCenter,kyberna AG,,,Liechtenstein,,empty_address,address field is blank
+kyberna DataCenter,kyberna AG,,,Liechtenstein,,empty_city,both address and city are blank — no location data
+Schwefelstrasse 5a,ICT Center,,,Liechtenstein,,empty_address,address field is blank
+Schwefelstrasse 5a,ICT Center,,,Liechtenstein,,empty_city,both address and city are blank — no location data
+Atman Data Center WAW-2,Atman sp. z o.o.,,,Poland,,empty_address,address field is blank
+Atman Data Center WAW-2,Atman sp. z o.o.,,,Poland,,empty_city,both address and city are blank — no location data
+Atman Data Center WAW-1,Atman sp. z o.o.,,,Poland,,empty_address,address field is blank
+Atman Data Center WAW-1,Atman sp. z o.o.,,,Poland,,empty_city,both address and city are blank — no location data
+MAN Stargard - (C),Stargard,,,Poland,,empty_address,address field is blank
+MAN Stargard - (C),Stargard,,,Poland,,empty_city,both address and city are blank — no location data
+MAN Stargard - (A),Stargard,,,Poland,,empty_address,address field is blank
+MAN Stargard - (A),Stargard,,,Poland,,empty_city,both address and city are blank — no location data
+MEO LDV,MEO,,,Portugal,,empty_address,address field is blank
+MEO LDV,MEO,,,Portugal,,empty_city,both address and city are blank — no location data
+NXDATA-3 Bucharest Data Center,NXDATA,,,Romania,,empty_address,address field is blank
+NXDATA-3 Bucharest Data Center,NXDATA,,,Romania,,empty_city,both address and city are blank — no location data
+Latsia,MTN,,,Cyprus,,empty_address,address field is blank
+Latsia,MTN,,,Cyprus,,empty_city,both address and city are blank — no location data
+The Powerhouse,Sure,,,Jersey,,empty_address,address field is blank
+The Powerhouse,Sure,,,Jersey,,empty_city,both address and city are blank — no location data
+Atlantic House,Sure,,,Isle of Man,,empty_address,address field is blank
+Atlantic House,Sure,,,Isle of Man,,empty_city,both address and city are blank — no location data
+Centenary House,Sure,,,Guernsey,,empty_address,address field is blank
+Centenary House,Sure,,,Guernsey,,empty_city,both address and city are blank — no location data
+Czech Republic ,Aruba.it,,,Czechia,,empty_address,address field is blank
+Czech Republic ,Aruba.it,,,Czechia,,empty_city,both address and city are blank — no location data
+Vaduz,CBRE,,,Liechtenstein,,empty_address,address field is blank
+Vaduz,CBRE,,,Liechtenstein,,empty_city,both address and city are blank — no location data
+maincubes AMS01,maincubes b.v.,,,Netherlands,,empty_address,address field is blank
+maincubes AMS01,maincubes b.v.,,,Netherlands,,empty_city,both address and city are blank — no location data
+NorthC Munich ,NorthC Datacenters,,,Germany,,empty_address,address field is blank
+NorthC Munich ,NorthC Datacenters,,,Germany,,empty_city,both address and city are blank — no location data
+Rechenzentrum Leipzig,HLkomm Telekommunikations GmbH,,,Germany,,empty_address,address field is blank
+Rechenzentrum Leipzig,HLkomm Telekommunikations GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Datacenter Berlin ,HLkomm Telekommunikations GmbH,,,Germany,,empty_address,address field is blank
+Datacenter Berlin ,HLkomm Telekommunikations GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Netnik Geist,Netnik,,,Germany,,empty_address,address field is blank
+Netnik Geist,Netnik,,,Germany,,empty_city,both address and city are blank — no location data
+Keppel DC FRA 1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_address,address field is blank
+Keppel DC FRA 1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Keppel DC FRA1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_address,address field is blank
+Keppel DC FRA1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+FDC 1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_address,address field is blank
+FDC 1,Keppel Data Centres Germany Holding GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Saarbrücken,inexio GmbH,,,Germany,,empty_address,address field is blank
+Saarbrücken,inexio GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+PRE Park,inexio GmbH,,,Germany,,empty_address,address field is blank
+PRE Park,inexio GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Einsiedlerhof,inexio GmbH,,,Germany,,empty_address,address field is blank
+Einsiedlerhof,inexio GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+RZ Astra,inexio GmbH,,,Germany,,empty_address,address field is blank
+RZ Astra,inexio GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+Saarlouis LZB,inexio GmbH,,,Germany,,empty_address,address field is blank
+Saarlouis LZB,inexio GmbH,,,Germany,,empty_city,both address and city are blank — no location data
+maincubes FRA01,maincubes b.v.,,,Germany,,empty_address,address field is blank
+maincubes FRA01,maincubes b.v.,,,Germany,,empty_city,both address and city are blank — no location data
+Euperline Data Center,Euperline,,,Turkey,,empty_address,address field is blank
+Euperline Data Center,Euperline,,,Turkey,,empty_city,both address and city are blank — no location data
+Kuzey Veri Merkezi,ümit dinç,,,Turkey,,empty_address,address field is blank
+Kuzey Veri Merkezi,ümit dinç,,,Turkey,,empty_city,both address and city are blank — no location data
+Star of Bosphorus Data Center,NGN Bilgi ve Iletisim Hizmetleri,,,Turkey,,empty_address,address field is blank
+Star of Bosphorus Data Center,NGN Bilgi ve Iletisim Hizmetleri,,,Turkey,,empty_city,both address and city are blank — no location data
+Alvdal,Nordavind,,,Norway,,empty_address,address field is blank
+Alvdal,Nordavind,,,Norway,,empty_city,both address and city are blank — no location data
+Hamar,Nordavind,,,Norway,,empty_address,address field is blank
+Hamar,Nordavind,,,Norway,,empty_city,both address and city are blank — no location data
+Rendalen,Nordavind,,,Norway,,empty_address,address field is blank
+Rendalen,Nordavind,,,Norway,,empty_city,both address and city are blank — no location data
+Tynset,Nordavind,,,Norway,,empty_address,address field is blank
+Tynset,Nordavind,,,Norway,,empty_city,both address and city are blank — no location data
+NXDATA-1 Bucharest Data Center,NXDATA,,,Romania,,empty_address,address field is blank
+NXDATA-1 Bucharest Data Center,NXDATA,,,Romania,,empty_city,both address and city are blank — no location data
+Herman IT Data Center,Herman IT Oy,,,Finland,,empty_address,address field is blank
+Herman IT Data Center,Herman IT Oy,,,Finland,,empty_city,both address and city are blank — no location data
+DC-LJU-SE-CYGRIDS,Cygrids Communications AB,,,Sweden,,empty_address,address field is blank
+DC-LJU-SE-CYGRIDS,Cygrids Communications AB,,,Sweden,,empty_city,both address and city are blank — no location data
+DC-ESL-SE-CYGRIDS,Cygrids Communications AB,,,Sweden,,empty_address,address field is blank
+DC-ESL-SE-CYGRIDS,Cygrids Communications AB,,,Sweden,,empty_city,both address and city are blank — no location data
+Bahnhof Sparven,Bahnhof AB,,,Sweden,,empty_address,address field is blank
+Bahnhof Sparven,Bahnhof AB,,,Sweden,,empty_city,both address and city are blank — no location data
+WhiteHosting,WhiteHosting,,,Italy,,empty_address,address field is blank
+WhiteHosting,WhiteHosting,,,Italy,,empty_city,both address and city are blank — no location data
+Fiber 23,Fiber 23,,,Italy,,empty_address,address field is blank
+Fiber 23,Fiber 23,,,Italy,,empty_city,both address and city are blank — no location data
+Playnet,Playnet Srl,,,Italy,,empty_address,address field is blank
+Playnet,Playnet Srl,,,Italy,,empty_city,both address and city are blank — no location data
+Naquadria Piacenza,Naquadria,,,Italy,,empty_address,address field is blank
+Naquadria Piacenza,Naquadria,,,Italy,,empty_city,both address and city are blank — no location data
+Swisscolocation,Swisscolocation SA,,,Switzerland,,empty_address,address field is blank
+Swisscolocation,Swisscolocation SA,,,Switzerland,,empty_city,both address and city are blank — no location data
+CLS Sesimbra,SAT-3,,,Portugal,,empty_address,address field is blank
+CLS Sesimbra,SAT-3,,,Portugal,,empty_city,both address and city are blank — no location data
+CLS Carcavalos,ACE (African Coast to Europe),,,Portugal,,empty_address,address field is blank
+CLS Carcavalos,ACE (African Coast to Europe),,,Portugal,,empty_city,both address and city are blank — no location data
+N01 Campus,Bulk Infrastructure AS,,,Norway,,empty_address,address field is blank
+N01 Campus,Bulk Infrastructure AS,,,Norway,,empty_city,both address and city are blank — no location data
+NXDATA-2 Bucharest Data Center,NXDATA,,,Romania,,empty_address,address field is blank
+NXDATA-2 Bucharest Data Center,NXDATA,,,Romania,,empty_city,both address and city are blank — no location data
+Formerly DataCentred,Unclaimed,,,United Kingdom,,empty_address,address field is blank
+Formerly DataCentred,Unclaimed,,,United Kingdom,,empty_city,both address and city are blank — no location data
+CYMTV,CYMTV,,,Netherlands,,empty_address,address field is blank
+CYMTV,CYMTV,,,Netherlands,,empty_city,both address and city are blank — no location data
+Etix BelgiumDC #1,Etix Everywhere,,,Belgium,,empty_address,address field is blank
+Etix BelgiumDC #1,Etix Everywhere,,,Belgium,,empty_city,both address and city are blank — no location data
+Prague (5.kvetna),T-Systems International GmbH,,,Czechia,,empty_address,address field is blank
+Prague (5.kvetna),T-Systems International GmbH,,,Czechia,,empty_city,both address and city are blank — no location data
+Bratislava 1,Sitel,,,Czechia,,empty_address,address field is blank
+Bratislava 1,Sitel,,,Czechia,,empty_city,both address and city are blank — no location data
+Dataplace Brabant,Dataplace,,,Netherlands,,empty_address,address field is blank
+Dataplace Brabant,Dataplace,,,Netherlands,,empty_city,both address and city are blank — no location data
+Dataplace Utrecht,Dataplace,,,Netherlands,,empty_address,address field is blank
+Dataplace Utrecht,Dataplace,,,Netherlands,,empty_city,both address and city are blank — no location data
+CE Colo,CE Colo,,,Czechia,,empty_address,address field is blank
+CE Colo,CE Colo,,,Czechia,,empty_city,both address and city are blank — no location data
+SDC,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+SDC,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+BVV,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+BVV,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+Koksární,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+Koksární,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+THP,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+THP,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+Nagano,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+Nagano,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+PVT,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+PVT,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+XEM,GTS Telecom SRL,,,Czechia,,empty_address,address field is blank
+XEM,GTS Telecom SRL,,,Czechia,,empty_city,both address and city are blank — no location data
+Bytom,3S Data Center,,,Poland,,empty_address,address field is blank
+Bytom,3S Data Center,,,Poland,,empty_city,both address and city are blank — no location data
+Amsterdam,EdgeConneX,,,Netherlands,,empty_address,address field is blank
+Amsterdam,EdgeConneX,,,Netherlands,,empty_city,both address and city are blank — no location data
+Vilnius (Kalvariju),Viasat,,,Lithuania,,empty_address,address field is blank
+Vilnius (Kalvariju),Viasat,,,Lithuania,,empty_city,both address and city are blank — no location data
+Jersey,Continent 8 Technologies,,,Jersey,,empty_address,address field is blank
+Jersey,Continent 8 Technologies,,,Jersey,,empty_city,both address and city are blank — no location data
+Kolos,Kolos Norway,,,Norway,,empty_address,address field is blank
+Kolos,Kolos Norway,,,Norway,,empty_city,both address and city are blank — no location data
+Lefdal Mine Datacenter ,Lefdal Mine Datacenter,,,Norway,,empty_address,address field is blank
+Lefdal Mine Datacenter ,Lefdal Mine Datacenter,,,Norway,,empty_city,both address and city are blank — no location data
+Oslo - Lorenskog,Basefarm,,,Norway,,empty_address,address field is blank
+Oslo - Lorenskog,Basefarm,,,Norway,,empty_city,both address and city are blank — no location data
+Rotterdam 1,SmartDC B.V.,,,Netherlands,,empty_address,address field is blank
+Rotterdam 1,SmartDC B.V.,,,Netherlands,,empty_city,both address and city are blank — no location data
+DC Tower,CRA (Ceske Radiokomunikace),,,Czechia,,empty_address,address field is blank
+DC Tower,CRA (Ceske Radiokomunikace),,,Czechia,,empty_city,both address and city are blank — no location data
+Cellnex,JHJC Kort,,,Netherlands,,empty_address,address field is blank
+Cellnex,JHJC Kort,,,Netherlands,,empty_city,both address and city are blank — no location data
+Oslo - Grorud,Basefarm,,,Norway,,empty_address,address field is blank
+Oslo - Grorud,Basefarm,,,Norway,,empty_city,both address and city are blank — no location data
+Global-e Datacenter,Global-e Datacenter,,,Netherlands,,empty_address,address field is blank
+Global-e Datacenter,Global-e Datacenter,,,Netherlands,,empty_city,both address and city are blank — no location data
+Equinix AM4,Equinix,,,Netherlands,,empty_address,address field is blank
+Equinix AM4,Equinix,,,Netherlands,,empty_city,both address and city are blank — no location data
+Databarn Rivium B.V,Databarn Rivium B.V,,,Netherlands,,empty_address,address field is blank
+Databarn Rivium B.V,Databarn Rivium B.V,,,Netherlands,,empty_city,both address and city are blank — no location data
+e-Quest,e-Quest,,,Netherlands,,empty_address,address field is blank
+e-Quest,e-Quest,,,Netherlands,,empty_city,both address and city are blank — no location data
+N01 Campus,Bulk Data Centers AS,,,Norway,,empty_address,address field is blank
+N01 Campus,Bulk Data Centers AS,,,Norway,,empty_city,both address and city are blank — no location data
+Oslo Internet Exchange - OS-IX,Bulk Data Centers AS,,,Norway,,empty_address,address field is blank
+Oslo Internet Exchange - OS-IX,Bulk Data Centers AS,,,Norway,,empty_city,both address and city are blank — no location data
+Brussels Datacenter,Brussels DataCenter,,,Belgium,,empty_address,address field is blank
+Brussels Datacenter,Brussels DataCenter,,,Belgium,,empty_city,both address and city are blank — no location data
+BIT-2A,BIT,,,Netherlands,,empty_address,address field is blank
+BIT-2A,BIT,,,Netherlands,,empty_city,both address and city are blank — no location data
+BIT-1,BIT,,,Netherlands,,empty_address,address field is blank
+BIT-1,BIT,,,Netherlands,,empty_city,both address and city are blank — no location data
+BIT-2B,BIT,,,Netherlands,,empty_address,address field is blank
+BIT-2B,BIT,,,Netherlands,,empty_city,both address and city are blank — no location data
+BIT-2D,BIT,,,Netherlands,,empty_address,address field is blank
+BIT-2D,BIT,,,Netherlands,,empty_city,both address and city are blank — no location data
+BIT-2C,BIT,,,Netherlands,,empty_address,address field is blank
+BIT-2C,BIT,,,Netherlands,,empty_city,both address and city are blank — no location data
+Alexhost,Alexhost SRL,,,Moldova,,empty_address,address field is blank
+Alexhost,Alexhost SRL,,,Moldova,,empty_city,both address and city are blank — no location data
+ITSOFT,ITSOFT,,,Russia,,empty_address,address field is blank
+ITSOFT,ITSOFT,,,Russia,,empty_city,both address and city are blank — no location data
+InterDC Enschede Marssteden,InterDC,,,Netherlands,,empty_address,address field is blank
+InterDC Enschede Marssteden,InterDC,,,Netherlands,,empty_city,both address and city are blank — no location data
+InterDC Hengelo,InterDC,,,Netherlands,,empty_address,address field is blank
+InterDC Hengelo,InterDC,,,Netherlands,,empty_city,both address and city are blank — no location data
+GLOBE Datacenter,GLOBE Datacenter B.V.,,,Netherlands,,empty_address,address field is blank
+GLOBE Datacenter,GLOBE Datacenter B.V.,,,Netherlands,,empty_city,both address and city are blank — no location data
+WNB Tønder,WNB A/S,,,Denmark,,empty_address,address field is blank
+WNB Tønder,WNB A/S,,,Denmark,,empty_city,both address and city are blank — no location data
+NorthC Winterthur (Zurich) 1,NorthC Datacenters,,,Switzerland,,empty_address,address field is blank
+NorthC Winterthur (Zurich) 1,NorthC Datacenters,,,Switzerland,,empty_city,both address and city are blank — no location data
+NorthC Münchenstein (Basel) 2,NorthC Datacenters,,,Switzerland,,empty_address,address field is blank
+NorthC Münchenstein (Basel) 2,NorthC Datacenters,,,Switzerland,,empty_city,both address and city are blank — no location data
+NorthC Münchenstein (Basel) 1,NorthC Datacenters,,,Switzerland,,empty_address,address field is blank
+NorthC Münchenstein (Basel) 1,NorthC Datacenters,,,Switzerland,,empty_city,both address and city are blank — no location data
+NorthC Datacenters Biel (Bern),NorthC Datacenters,,,Switzerland,,empty_address,address field is blank
+NorthC Datacenters Biel (Bern),NorthC Datacenters,,,Switzerland,,empty_city,both address and city are blank — no location data
+Fast2host,Fast2host - Fast4networks Ltd,,,United Kingdom,,empty_address,address field is blank
+Fast2host,Fast2host - Fast4networks Ltd,,,United Kingdom,,empty_city,both address and city are blank — no location data
+Sofia Data Center (SDC),Sofia Data Center (SDC),,,Bulgaria,,empty_address,address field is blank
+Sofia Data Center (SDC),Sofia Data Center (SDC),,,Bulgaria,,empty_city,both address and city are blank — no location data
+Media Datacentre Newbury,Media Datacentre,,,United Kingdom,,empty_address,address field is blank
+Media Datacentre Newbury,Media Datacentre,,,United Kingdom,,empty_city,both address and city are blank — no location data
+North Lincolnshire,Humber Tech Park Ltd,,,United Kingdom,,empty_address,address field is blank
+North Lincolnshire,Humber Tech Park Ltd,,,United Kingdom,,empty_city,both address and city are blank — no location data
+EU North Vilnius LT DC1,Delska,,,Lithuania,,empty_address,address field is blank
+EU North Vilnius LT DC1,Delska,,,Lithuania,,empty_city,both address and city are blank — no location data
+EU North Vilnius LT DC3,Delska,,,Lithuania,,empty_address,address field is blank
+EU North Vilnius LT DC3,Delska,,,Lithuania,,empty_city,both address and city are blank — no location data
+EU North Riga LV DC1,Delska,,,Latvia,,empty_address,address field is blank
+EU North Riga LV DC1,Delska,,,Latvia,,empty_city,both address and city are blank — no location data
+PenDC Data Center Solutions,PenDC Data Center Solutions,,,Turkey,,empty_address,address field is blank
+PenDC Data Center Solutions,PenDC Data Center Solutions,,,Turkey,,empty_city,both address and city are blank — no location data
+Waltham Cross,Google,,,United Kingdom,,empty_address,address field is blank
+Waltham Cross,Google,,,United Kingdom,,empty_city,both address and city are blank — no location data
+Killala Ireland,AVAIO Digital Partners,,,Ireland,,empty_address,address field is blank
+Killala Ireland,AVAIO Digital Partners,,,Ireland,,empty_city,both address and city are blank — no location data
+Hanau,Google,,,Germany,,empty_address,address field is blank
+Hanau,Google,,,Germany,,empty_city,both address and city are blank — no location data
+"CWCS Managed Hosting, Nottingham Data Centre",CWCS Managed Hosting,,,United Kingdom,,empty_address,address field is blank
+"CWCS Managed Hosting, Nottingham Data Centre",CWCS Managed Hosting,,,United Kingdom,,empty_city,both address and city are blank — no location data
+Atman Data Center WAW-3 -  1 building out of 3 commissioned in 2025,Atman sp. z o.o.,,,Poland,,empty_address,address field is blank
+Atman Data Center WAW-3 -  1 building out of 3 commissioned in 2025,Atman sp. z o.o.,,,Poland,,empty_city,both address and city are blank — no location data
+Atman Data Center WAW-2,Atman sp. z o.o.,,,Poland,,empty_address,address field is blank
+Atman Data Center WAW-2,Atman sp. z o.o.,,,Poland,,empty_city,both address and city are blank — no location data
+Atman Data Center WAW-1,Atman sp. z o.o.,,,Poland,,empty_address,address field is blank
+Atman Data Center WAW-1,Atman sp. z o.o.,,,Poland,,empty_city,both address and city are blank — no location data
+Marseille 6,Digital Realty Trust,,,France,,empty_address,address field is blank
+Marseille 6,Digital Realty Trust,,,France,,empty_city,both address and city are blank — no location data
+MUC 8 Data Center,myLoc a WIIT Company,,,Germany,"85540 Haar, Germany",address_no_street,"address appears to contain only zip/city/country: '85540 Haar, Germany'"
+Datacenter Schweiz,Peaknetworks,,,Switzerland,"Gais, Switzerland",address_no_street,"address appears to contain only zip/city/country: 'Gais, Switzerland'"
+Nantes Data Center,Cogent Communications,,,France,"Nantes, France",placeholder,"address looks like a stub: 'Nantes, France'"
+Nanterre Capitole,UltraEdge,,,France,"Nanterre, Hauts-de-Seine, France",placeholder,"address looks like a stub: 'Nanterre, Hauts-de-Seine, France'"
+Naaldwijk Data Center,Greenhouse Datacenters B.V.,,,Netherlands,"Naaldwijk, Países Bajos",placeholder,"address looks like a stub: 'Naaldwijk, Países Bajos'"
+Madrid (Meco),Pure DC,,,Spain,"Meco, Spain",address_no_street,"address appears to contain only zip/city/country: 'Meco, Spain'"
+VDC3 Profile Park,Viatel Technology Group,,,Ireland,"Nangor Road, Yellowmeadows, Dublin, Ireland",placeholder,"address looks like a stub: 'Nangor Road, Yellowmeadows, Dublin, Irel'"
+VIE1 Data Center,M247 Global,,,Austria,"Wien, Austria",address_no_street,"address appears to contain only zip/city/country: 'Wien, Austria'"
+OSL2,Hscale,,,Norway,"Oslo, Norway",address_no_street,"address appears to contain only zip/city/country: 'Oslo, Norway'"
+Osl3,Hscale,,,Norway,"Oslo, Norway",address_no_street,"address appears to contain only zip/city/country: 'Oslo, Norway'"
+OSL03D Data Center,Stack Infrastructure,,,Norway,"Oslo, Norway",address_no_street,"address appears to contain only zip/city/country: 'Oslo, Norway'"
+OSL04A Data Center,Stack Infrastructure,,,Norway,"Oslo, Norway",address_no_street,"address appears to contain only zip/city/country: 'Oslo, Norway'"
+OSL04E Data Center,Stack Infrastructure,,,Norway,"Oslo, Norway",address_no_street,"address appears to contain only zip/city/country: 'Oslo, Norway'"
+Oulu Data Center,GleSYS,,,Finland,"Oulu, Finland",address_no_street,"address appears to contain only zip/city/country: 'Oulu, Finland'"
+SDC Ruse Data Center,Neterra Telecommunications,,,Bulgaria,"Ruse, Bulgaria",address_no_street,"address appears to contain only zip/city/country: 'Ruse, Bulgaria'"
