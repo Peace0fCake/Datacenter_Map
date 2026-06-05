@@ -34,6 +34,7 @@ from pathlib import Path
 
 HERE       = Path(__file__).parent
 RAW_DIR    = HERE / "raw"
+SITES_DIR  = RAW_DIR / "sites"   # cached type=site relation responses
 OUTPUT     = HERE / "osm_datacenters.geojson"
 FRESH      = "--fresh" in sys.argv
 HEADERS    = {"User-Agent": "ai-datacenter-map-school-project/1.0 (mtwmuller@gmail.com)"}
@@ -59,6 +60,31 @@ COUNTRIES = [
 ]
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+
+
+def site_query(iso2):
+    """
+    Fetch type=site relations for a country using 'out body' so we get member
+    lists (way/node ref IDs).  We don't need geometry — just which OSM IDs
+    belong to which site relation.
+    """
+    return f"""
+[out:json][timeout:60];
+area["ISO3166-1"="{iso2}"]->.c;
+(
+  relation["type"="site"]["amenity"="data_centre"](area.c);
+  relation["type"="site"]["amenity"="data_center"](area.c);
+  relation["type"="site"]["telecom"="data_centre"](area.c);
+  relation["type"="site"]["telecom"="data_center"](area.c);
+  relation["type"="site"]["building"="data_centre"](area.c);
+  relation["type"="site"]["building"="data_center"](area.c);
+  relation["type"="site"]["facility"="data_centre"](area.c);
+  relation["type"="site"]["facility"="data_center"](area.c);
+  relation["type"="site"]["man_made"="data_centre"](area.c);
+  relation["type"="site"]["man_made"="data_center"](area.c);
+);
+out body;
+"""
 
 
 def country_query(iso2):
@@ -98,6 +124,32 @@ out geom tags;
 
 
 # ── HTTP ──────────────────────────────────────────────────────────────────────
+
+def fetch_site_relations(iso2):
+    """Query Overpass for type=site relations; retry up to 3× on failure."""
+    body = ("data=" + urllib.parse.quote(site_query(iso2))).encode()
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(
+                OVERPASS_URL, data=body,
+                headers={**HEADERS, "Content-Type": "application/x-www-form-urlencoded"},
+            )
+            with urllib.request.urlopen(req, timeout=90) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = 30 * (attempt + 1)
+                print(f"\n    rate-limited (sites) — waiting {wait}s …")
+                time.sleep(wait)
+            else:
+                print(f"\n    HTTP {e.code} (sites) for {iso2}")
+                return None
+        except Exception as e:
+            print(f"\n    error fetching sites {iso2}: {e}")
+            if attempt < 2:
+                time.sleep(10)
+    return None
+
 
 def fetch_country(iso2):
     """Query Overpass for one country; retry up to 3× on rate-limit or timeout."""
@@ -270,8 +322,34 @@ def elements_to_features(elements, iso2):
 
 # ── Output ────────────────────────────────────────────────────────────────────
 
+def load_site_membership():
+    """
+    Build a mapping: osm_id (way/node) → site_relation_id from all cached
+    SITES_DIR/XX.json files.  Returns an empty dict if no site caches exist.
+    """
+    membership = {}  # osm_id → relation_id
+    if not SITES_DIR.exists():
+        return membership
+    for path in sorted(SITES_DIR.glob("*.json")):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        for el in data.get("elements", []):
+            if el.get("type") != "relation":
+                continue
+            rel_id = el["id"]
+            for m in el.get("members", []):
+                if m.get("type") in ("way", "node"):
+                    membership[m["ref"]] = rel_id
+    return membership
+
+
 def rebuild_geojson():
-    """Merge all raw/XX.json files into the output GeoJSON, deduplicating by osm_id."""
+    """Merge all raw/XX.json files into the output GeoJSON, deduplicating by osm_id.
+    Tags each feature with site_relation_id when it is a member of a type=site relation."""
+    site_membership = load_site_membership()
+
     seen     = set()
     features = []
     for path in sorted(RAW_DIR.glob("*.json")):
@@ -282,6 +360,9 @@ def rebuild_geojson():
             key = f["properties"]["osm_id"]
             if key not in seen:
                 seen.add(key)
+                site_rel = site_membership.get(key)
+                if site_rel is not None:
+                    f["properties"]["site_relation_id"] = site_rel
                 features.append(f)
     OUTPUT.write_text(json.dumps(
         {"type": "FeatureCollection", "features": features},
@@ -303,9 +384,12 @@ def fmt_eta(seconds):
 
 def main():
     RAW_DIR.mkdir(exist_ok=True)
+    SITES_DIR.mkdir(exist_ok=True)
 
     if FRESH:
         for f in RAW_DIR.glob("*.json"):
+            f.unlink()
+        for f in SITES_DIR.glob("*.json"):
             f.unlink()
         print("--fresh: cleared raw cache, starting from zero")
 
@@ -352,12 +436,23 @@ def main():
         # Cache raw response
         (RAW_DIR / f"{iso2}.json").write_text(json.dumps(data))
 
+        # Fetch type=site relations for this country (skip if already cached)
+        sites_path = SITES_DIR / f"{iso2}.json"
+        if not sites_path.exists():
+            time.sleep(3)
+            sites_data = fetch_site_relations(iso2)
+            if sites_data is not None:
+                n_sites = len([e for e in sites_data.get("elements", [])
+                               if e.get("type") == "relation"])
+                sites_path.write_text(json.dumps(sites_data))
+                print(f"  +{n_sites} site-relations", end="", flush=True)
+
         # Rebuild GeoJSON immediately so partial output is always valid
         n_features = rebuild_geojson()
 
         fetched += 1
         print(
-            f"nodes:{counts.get('node',0)}  ways:{counts.get('way',0)}  "
+            f"  nodes:{counts.get('node',0)}  ways:{counts.get('way',0)}  "
             f"rels:{counts.get('relation',0)}"
             + (f"  skipped:{skipped}" if skipped else "")
             + f"  ({dur:.1f}s)  total so far:{n_features}"

@@ -25,6 +25,16 @@ function SectionLabel({ children }) {
   return <div className="section-label">{children}</div>;
 }
 
+function ReportedBadge({ reported, url }) {
+  if (!reported) return <span className="data-badge est">est.</span>;
+  if (url) return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="data-badge reported data-badge-link">
+      reported ↗
+    </a>
+  );
+  return <span className="data-badge reported">reported</span>;
+}
+
 function BigNumber({ value, unit, sub }) {
   return (
     <div className="big-number">
@@ -245,9 +255,10 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
               )}
               {isSimulation && <span className="tag tag-sim">Simulation</span>}
               {dc.source === 'fallback' && <span className="tag tag-fallback">OSM fallback</span>}
-              {dc.source === 'campus' && dc.buildingCount > 1 && (
-                <span className="tag tag-campus">{dc.buildingCount} buildings</span>
-              )}
+              {dc.isSite
+                ? <span className="tag tag-site">Campus · {dc.buildingCount} buildings</span>
+                : !isSimulation && dc.source !== 'fallback' && <span className="tag tag-dc">Data Center</span>
+              }
             </div>
 
             {/* Footprint */}
@@ -259,10 +270,34 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                     ? `${(dc.footprintM2 / 10_000).toFixed(2)} ha`
                     : `${dc.footprintM2.toLocaleString()} m²`}
                 </span>
-                <span className="footprint-label">footprint</span>
-                {dc.buildingCount > 1 && (
-                  <span className="footprint-label"> across {dc.buildingCount} buildings</span>
-                )}
+                {dc.isSite
+                  ? <span className="footprint-label">combined data center area · {dc.buildingCount} buildings</span>
+                  : <span className="footprint-label">data center area</span>
+                }
+              </div>
+            )}
+
+            {/* Member buildings list for campus sites */}
+            {dc.isSite && dc.memberBuildings?.length > 0 && (
+              <div className="panel-section">
+                <SectionLabel>Buildings in this campus</SectionLabel>
+                <div className="member-list">
+                  {dc.memberBuildings.map(b => (
+                    <div key={b.osm_id} className="member-item">
+                      <span className="member-name">{b.name || 'Unnamed building'}</span>
+                      <span className="member-meta">
+                        {b.footprint_m2 ? `${Math.round(b.footprint_m2).toLocaleString()} m²` : '—'}
+                        {b.osm_url && (
+                          <a href={b.osm_url} target="_blank" rel="noopener noreferrer" className="member-osm-link">OSM ↗</a>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="member-note">
+                  Footprint and power estimates are the sum of individual buildings.
+                  The campus boundary polygon is excluded from calculations.
+                </p>
               </div>
             )}
 
@@ -306,7 +341,10 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                 {/* Calibration notice */}
                 {dc.calibrationSource && (
                   <div className="calibration-notice">
-                    <span className="cal-badge">Reported</span>
+                    {dc.calibrationSourceUrl
+                      ? <a href={dc.calibrationSourceUrl} target="_blank" rel="noopener noreferrer" className="cal-badge cal-badge-link">Reported ↗</a>
+                      : <span className="cal-badge">Reported</span>
+                    }
                     PUE{m.wueReported ? ' & WUE' : ''} from {dc.calibrationSource}
                   </div>
                 )}
@@ -321,9 +359,7 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                       <CoolingBar coolingRatio={m.coolingRatio} />
                       <div className="card-pue">
                         PUE {m.pue}
-                        <span className={`data-badge ${m.pueReported ? 'reported' : 'est'}`}>
-                          {m.pueReported ? 'reported' : 'est.'}
-                        </span>
+                        <ReportedBadge reported={m.pueReported} url={dc.calibrationSourceUrl} />
                       </div>
                     </div>
                     <div className="metric-card">
@@ -379,9 +415,7 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                       sub={
                         <>
                           WUE {m.wue} L/kWh
-                          <span className={`data-badge ${m.wueReported ? 'reported' : 'est'}`}>
-                            {m.wueReported ? 'reported' : 'est.'}
-                          </span>
+                          <ReportedBadge reported={m.wueReported} url={dc.calibrationSourceUrl} />
                         </>
                       }
                     />
@@ -392,7 +426,9 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                 <div className="panel-footer">
                   <span>PUE {m.pue} · {m.avgTempC}°C avg · {(m.utilizationRate * 100).toFixed(0)}% util.</span>
                   <span className="model-note">
-                    {dc.footprintM2 ? 'area-allocated · JRC 2023' : 'capacity model'}
+                    {dc.footprintM2
+                      ? dc.isSite ? 'building areas · JRC 2023' : 'area model · JRC 2023'
+                      : 'capacity model'}
                   </span>
                 </div>
               </>

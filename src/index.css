@@ -247,6 +247,8 @@ body { margin: 0; height: 100vh; overflow: hidden; }
 .tag-fallback { background: rgba(249,115,22,0.15);  color: var(--orange); }
 .tag-sim      { background: rgba(168,85,247,0.2);   color: var(--sim-color); }
 .tag-campus   { background: rgba(14,165,233,0.15);  color: #38bdf8; }
+.tag-site     { background: rgba(14,165,233,0.15);  color: #38bdf8; }
+.tag-dc       { background: rgba(99,102,241,0.12);  color: var(--accent-light); }
 
 .panel-footprint {
   display: flex; align-items: center; gap: 6px;
@@ -255,6 +257,22 @@ body { margin: 0; height: 100vh; overflow: hidden; }
 .footprint-icon  { font-size: 10px; opacity: 0.6; }
 .footprint-val   { font-weight: 600; color: var(--text); }
 .footprint-label { opacity: 0.7; }
+
+/* ── Member buildings list (campus sites) ── */
+.member-list {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 200px; overflow-y: auto;
+}
+.member-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 8px; border-radius: 4px; font-size: 11px;
+  background: var(--surface2);
+}
+.member-name { color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.member-meta { color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 8px; }
+.member-osm-link { color: var(--accent-light); text-decoration: none; font-size: 10px; }
+.member-osm-link:hover { text-decoration: underline; }
+.member-note { font-size: 10px; color: var(--text-muted); opacity: 0.7; margin: 6px 0 0; line-height: 1.4; }
 
 /* ── Operator / no-operator ── */
 .panel-operator.no-operator { color: var(--text-muted); font-style: italic; opacity: 0.7; }
@@ -445,6 +463,8 @@ body { margin: 0; height: 100vh; overflow: hidden; }
 }
 .data-badge.reported { background: rgba(34,197,94,0.15); color: #22c55e; }
 .data-badge.est      { background: rgba(148,163,184,0.12); color: #94a3b8; }
+a.data-badge { text-decoration: none; cursor: pointer; transition: filter 0.15s; }
+a.data-badge:hover   { filter: brightness(0.68); }
 
 .card-pue {
   font-size: 11px; color: var(--text-muted); margin-top: auto;
@@ -463,6 +483,8 @@ body { margin: 0; height: 100vh; overflow: hidden; }
   background: rgba(34,197,94,0.2); color: #22c55e;
   text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0;
 }
+a.cal-badge { text-decoration: none; cursor: pointer; transition: filter 0.15s; }
+a.cal-badge:hover { filter: brightness(0.68); }
 
 /* ── Search bar ────────────────────────────────────────────────────────────── */
 .search-bar {

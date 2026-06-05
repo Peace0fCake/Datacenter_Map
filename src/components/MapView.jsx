@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useCallback, useMemo, useEffect } from 'react';
 import Map, { Source, Layer } from 'react-map-gl/maplibre';
 import { waterStressLabel } from '../lib/model';
 import carbonData from '../data/carbonIntensity.json';
@@ -13,7 +13,6 @@ const STYLES = {
 
 const COUNTRIES_GEOJSON = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
 
-// Geographic centroids for EU/EEA countries — matches where OSM places the country label
 const COUNTRY_CENTERS = {
   AT: [14.12, 47.60], BE: [4.47, 50.50], BG: [25.48, 42.73], CH: [8.23, 46.82],
   CY: [33.43, 35.13], CZ: [15.47, 49.82], DE: [10.45, 51.17], DK: [9.50, 56.26],
@@ -33,8 +32,6 @@ function intensityToColor(gco2) {
   return '#991b1b';
 }
 
-// Natural Earth 110m uses ISO_A2_EH (not ISO_A2) for countries with overseas
-// territories — notably France and Norway both have ISO_A2: "-99" there.
 const INTENSITY_COLOR_EXPR = [
   'match',
   ['get', 'ISO_A2_EH'],
@@ -89,32 +86,29 @@ function toCountryGeoJSON(countryGroups) {
       const center = COUNTRY_CENTERS[g.countryCode];
       return {
         type: 'Feature',
-        // Use geographic centroid so labels match OSM placement; fall back to DC centroid
         geometry: { type: 'Point', coordinates: center ?? [g.lng, g.lat] },
         properties: {
           countryCode: g.countryCode,
           countryName: carbonData[g.countryCode]?.name ?? g.countryCode,
           dcCount: g.dcCount,
-          totalCapacityMW: g.totalCapacityMW,
         },
       };
     }),
   };
 }
 
-// ── Campus / building visual scales ──────────────────────────────────────────
+// ── Campus visual scales ───────────────────────────────────────────────────────
 
-// area_field: 'total_footprint_m2' for campuses, 'footprint_m2' for buildings
 function areaColorExpr(field) {
   return [
     'interpolate', ['linear'],
     ['coalesce', ['get', field], 0],
-    0,       '#64748b',   // no data: slate
-    500,     '#6366f1',   // tiny (<500 m²): indigo
-    5000,    '#0ea5e9',   // small: sky
-    25000,   '#eab308',   // medium: yellow
-    100000,  '#f97316',   // large: orange
-    400000,  '#ef4444',   // hyperscale: red
+    0,       '#64748b',
+    500,     '#6366f1',
+    5000,    '#0ea5e9',
+    25000,   '#eab308',
+    100000,  '#f97316',
+    400000,  '#ef4444',
   ];
 }
 
@@ -129,60 +123,38 @@ const CAMPUS_RADIUS = [
   800000,  22,
 ];
 
-const IS_POLYGON = ['match', ['geometry-type'], ['Polygon', 'MultiPolygon'], true, false];
+const IS_POLYGON    = ['match', ['geometry-type'], ['Polygon', 'MultiPolygon'], true, false];
 const IS_POINT_GEOM = ['==', ['geometry-type'], 'Point'];
 
-// ── DC object factories (campus / individual building click) ──────────────────
+// ── Campus DC object factory ───────────────────────────────────────────────────
 
-function campusToDC(props) {
-  return {
-    id:          props.id,
-    lat:         props.lat,
-    lng:         props.lon,
-    name:        props.name || 'Data Center',
-    operator:    props.operator || null,
-    capacityMW:  props.estimated_capacity_mw || null,
-    footprintM2: props.total_footprint_m2 || null,
-    buildingCount: props.building_count || 1,
-    source:      'campus',
-    sourceUrl:   props.osm_url || null,
-    country:     props.country_iso2 || null,
-    tags:        {},
-  };
+function parseProp(raw) {
+  if (!raw) return [];
+  if (typeof raw === 'string') { try { return JSON.parse(raw); } catch { return []; } }
+  return raw;
 }
 
-function buildingToDC(props) {
+function campusToDC(props) {
+  const buildingCount = props.building_count || 1;
   return {
-    id:          props.id,
-    lat:         props.lat,
-    lng:         props.lon,
-    name:        props.name || props.operator || 'Data Center',
-    operator:    props.operator || null,
-    capacityMW:  props.estimated_capacity_mw || null,
-    footprintM2: props.footprint_m2 || null,
-    buildingCount: 1,
-    source:      'osm',
-    sourceUrl:   props.osm_url || null,
-    country:     props.addr_country || props.country_iso2 || null,
-    tags:        {},
+    id:              props.id,
+    lat:             props.lat,
+    lng:             props.lon,
+    name:            props.name || 'Data Center',
+    operator:        props.operator || null,
+    capacityMW:      props.estimated_capacity_mw || null,
+    footprintM2:     props.total_footprint_m2 || null,
+    buildingCount,
+    isSite:          buildingCount > 1,
+    memberBuildings: parseProp(props.member_buildings),
+    source:          'campus',
+    sourceUrl:       props.osm_url || null,
+    country:         props.country_iso2 || null,
+    tags:            {},
   };
 }
 
 // ── Static layer configs ───────────────────────────────────────────────────────
-
-const CLUSTER_PAINT = {
-  'circle-color': '#6366f1',
-  'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28],
-  'circle-opacity': 0.85,
-  'circle-stroke-width': 1.5,
-  'circle-stroke-color': 'rgba(255,255,255,0.25)',
-};
-const CLUSTER_COUNT_LAYOUT = {
-  'text-field': '{point_count_abbreviated}',
-  'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
-  'text-size': 12,
-};
-const CLUSTER_COUNT_PAINT = { 'text-color': '#ffffff' };
 
 const DC_RING_PAINT = {
   'circle-radius': 14,
@@ -204,41 +176,68 @@ const DC_SIM_LABEL_LAYOUT = {
 };
 const DC_SIM_LABEL_PAINT = { 'text-color': '#ffffff' };
 
-// Country name label — styled as a clickable chip distinct from the base map labels
+// Country label layout matching Carto dark-matter / positron style:
+//   text-transform: uppercase, text-size with zoom stops, same font fallback chain
 const COUNTRY_LABEL_LAYOUT = {
   'text-field': ['get', 'countryName'],
   'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
-  'text-size': 12,
+  'text-size': ['interpolate', ['linear'], ['zoom'], 3, 11, 4, 12, 5, 13, 6, 14],
+  'text-transform': 'uppercase',
   'text-allow-overlap': false,
   'text-anchor': 'center',
+  'text-max-width': ['interpolate', ['linear'], ['zoom'], 2, 6, 5, 12],
 };
+// Colors sampled from the Carto style: muted blue-gray (dark) / cool gray (light)
 const COUNTRY_LABEL_PAINT_DARK = {
-  'text-color': '#c7d2fe',         // indigo-200
-  'text-halo-color': '#1e1b4b',   // indigo-950, creates a dark pill background
-  'text-halo-width': 5,
-  'text-halo-blur': 0,
+  'text-color': ['interpolate', ['linear'], ['zoom'], 3, 'rgba(158,182,189,1)', 6, 'rgba(120,141,147,1)'],
+  'text-halo-color': '#111111',
+  'text-halo-width': 1,
 };
 const COUNTRY_LABEL_PAINT_LIGHT = {
-  'text-color': '#3730a3',         // indigo-800
-  'text-halo-color': '#e0e7ff',   // indigo-100
-  'text-halo-width': 5,
-  'text-halo-blur': 0,
+  'text-color': ['interpolate', ['linear'], ['zoom'], 3, '#8a99a4', 6, '#b9c2c9'],
+  'text-halo-color': '#fafaf8',
+  'text-halo-width': 1,
 };
 
-const NOT_CLUSTER = ['!', ['has', 'point_count']];
-const IS_CLUSTER  = ['has', 'point_count'];
-const IS_SELECTED = ['all', NOT_CLUSTER, ['==', ['get', 'selected'], 1]];
-const IS_SIM      = ['all', NOT_CLUSTER, ['==', ['get', 'simulation'], 1]];
+const IS_SELECTED = ['==', ['get', 'selected'], 1];
+const IS_SIM      = ['==', ['get', 'simulation'], 1];
 
-const COUNTRY_MAX_ZOOM = 4;
-const DC_MIN_ZOOM = 4;
-const CAMPUS_MIN_ZOOM = 3;
+// Zoom at which building outlines appear; campus dot hides above this threshold
+const BUILDING_ZOOM = 13;
+
+const COUNTRY_MAX_ZOOM = 7;    // Matches Carto place_country_1 maxzoom
+const DC_MIN_ZOOM      = 4;
+const CAMPUS_MIN_ZOOM  = 3;
+
+// ── Base map country label suppression ────────────────────────────────────────
+// Hides the base map's own country labels for countries we overlay with clickable ones.
+// Layer IDs and iso_a2 property come from the OpenMapTiles schema used by Carto.
+function applyCountryLabelFilter(map, codes) {
+  if (!codes.length) return;
+  const exclude = ['!', ['in', ['get', 'iso_a2'], ['literal', codes]]];
+  const layers = map.getStyle()?.layers ?? [];
+  ['place_country_1', 'place_country_2'].forEach(id => {
+    if (!map.getLayer(id)) return;
+    const original = layers.find(l => l.id === id)?.filter;
+    map.setFilter(id, original ? ['all', original, exclude] : exclude);
+  });
+}
+
+// Target zoom when flying to a campus based on its footprint
+function campusTargetZoom(footprintM2) {
+  if (footprintM2 > 500000) return 13;
+  if (footprintM2 > 100000) return 14;
+  if (footprintM2 >  25000) return 15;
+  if (footprintM2 >   5000) return 16;
+  return 18;
+}
 
 export function MapView({
   dataCenters, countryGroups, selectedDC, onSelectDC, onSelectCountry,
   simulationActive, onMapClick, theme, activeLayer,
 }) {
   const mapRef = useRef(null);
+  const countryCodesRef = useRef([]);
 
   const dcGeoJSON = useMemo(
     () => toDCGeoJSON(dataCenters, selectedDC?.id),
@@ -250,23 +249,50 @@ export function MapView({
     [countryGroups],
   );
 
-  const handleClick = useCallback(async (e) => {
+  // Campus dot is hidden at BUILDING_ZOOM+ when selected, so outlines take over
+  const selectedCampusId = selectedDC?.source === 'campus' ? (selectedDC.id ?? '$$none$$') : '$$none$$';
+
+  // Building highlight filter: only show buildings belonging to the selected campus
+  const selectedCampusHash = selectedDC?.source === 'campus'
+    ? (selectedDC.id?.slice(7) ?? '')
+    : '';
+
+  // Keep country codes ref in sync; apply filter whenever list changes
+  useEffect(() => {
+    const codes = countryGroups.map(g => g.countryCode);
+    countryCodesRef.current = codes;
+    const map = mapRef.current?.getMap();
+    if (map?.isStyleLoaded() && codes.length) applyCountryLabelFilter(map, codes);
+  }, [countryGroups]);
+
+  // On map load (and after style reloads from theme change): suppress base map labels
+  const handleMapLoad = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const apply = () => applyCountryLabelFilter(map, countryCodesRef.current);
+    apply();
+    map.on('style.load', apply);
+  }, []);
+
+  const handleClick = useCallback((e) => {
     const features = e.features ?? [];
-    const zoom = mapRef.current?.getMap()?.getZoom() ?? 0;
 
-    // Individual building polygon or node takes priority at high zoom (15+)
-    const buildingFeat = features.find(f =>
-      f.layer.id === 'building-fills' || f.layer.id === 'building-nodes'
-    );
-    if (buildingFeat) {
-      onSelectDC(buildingToDC(buildingFeat.properties));
-      return;
-    }
-
-    // Campus circle only fires when buildings are not yet visible (zoom < 15)
+    // Campus circle — primary interactive unit at all zoom levels
     const campusFeat = features.find(f => f.layer.id === 'campus-circles');
-    if (campusFeat && zoom < 15) {
-      onSelectDC(campusToDC(campusFeat.properties));
+    if (campusFeat) {
+      const dc = campusToDC(campusFeat.properties);
+      onSelectDC(dc);
+      // Fly to the campus so building outlines become visible
+      const footprint = campusFeat.properties.total_footprint_m2 ?? 0;
+      const target = campusTargetZoom(footprint);
+      const map = mapRef.current?.getMap();
+      if (map && (map.getZoom() ?? 0) < target) {
+        map.flyTo({
+          center: [campusFeat.properties.lon, campusFeat.properties.lat],
+          zoom: target,
+          duration: 800,
+        });
+      }
       return;
     }
 
@@ -275,22 +301,6 @@ export function MapView({
     if (pointFeat) {
       const dc = dataCenters.find(d => d.id === pointFeat.properties.id);
       if (dc) { onSelectDC(dc); return; }
-    }
-
-    const clusterFeat = features.find(f => f.layer.id === 'dc-clusters');
-    if (clusterFeat) {
-      const map = mapRef.current?.getMap();
-      const source = map?.getSource('dc-source');
-      if (source) {
-        const [lng, lat] = clusterFeat.geometry.coordinates;
-        try {
-          const zoom = await source.getClusterExpansionZoom(clusterFeat.properties.cluster_id);
-          map.easeTo({ center: [lng, lat], zoom: zoom + 0.5 });
-        } catch {
-          map.easeTo({ center: [lng, lat], zoom: (map.getZoom() ?? 4) + 2 });
-        }
-      }
-      return;
     }
 
     const countryFeat = features.find(f => f.layer.id === 'country-labels');
@@ -327,7 +337,8 @@ export function MapView({
         onClick={handleClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        interactiveLayerIds={['campus-circles', 'building-fills', 'building-nodes', 'dc-points', 'dc-clusters', 'country-labels']}
+        onLoad={handleMapLoad}
+        interactiveLayerIds={['campus-circles', 'dc-points', 'country-labels']}
         attributionControl={true}
       >
         {/* Country overlay — carbon intensity or water stress */}
@@ -347,7 +358,7 @@ export function MapView({
           }} />
         </Source>
 
-        {/* Clickable country name labels — visible when zoomed out */}
+        {/* Clickable country name labels — styled to match Carto base map, maxzoom matches base */}
         <Source id="country-source" type="geojson" data={countryGeoJSON}>
           <Layer
             id="country-labels"
@@ -358,15 +369,16 @@ export function MapView({
           />
         </Source>
 
-        {/* Campus-level dots — one per campus, visible from zoom 3–15, sized/coloured by footprint */}
+        {/* Campus-level dots — one per campus, all zoom levels, sized/coloured by footprint.
+            The selected campus dot hides at zoom ≥ BUILDING_ZOOM so outlines take over. */}
         <Source id="campus-source" type="geojson" data="/data/osm_campuses.geojson">
-          {/* Selected campus ring */}
+          {/* Selection ring — only shown at low zoom before building outlines appear */}
           <Layer
             id="campus-selected-ring"
             type="circle"
             minzoom={CAMPUS_MIN_ZOOM}
-            maxzoom={15}
-            filter={['==', ['get', 'id'], selectedDC?.id ?? '']}
+            maxzoom={BUILDING_ZOOM}
+            filter={['==', ['get', 'id'], selectedCampusId]}
             paint={{
               'circle-radius': ['interpolate', ['linear'], ['coalesce', ['get', 'total_footprint_m2'], 0],
                 0, 9, 1000, 11, 10000, 14, 50000, 18, 200000, 22, 800000, 26],
@@ -379,7 +391,12 @@ export function MapView({
             id="campus-circles"
             type="circle"
             minzoom={CAMPUS_MIN_ZOOM}
-            maxzoom={15}
+            // At zoom ≥ BUILDING_ZOOM, hide the selected campus's dot
+            filter={[
+              'any',
+              ['!=', ['get', 'id'], selectedCampusId],
+              ['<', ['zoom'], BUILDING_ZOOM],
+            ]}
             paint={{
               'circle-color':        areaColorExpr('total_footprint_m2'),
               'circle-radius':       CAMPUS_RADIUS,
@@ -390,61 +407,45 @@ export function MapView({
           />
         </Source>
 
-        {/* Individual buildings — polygons + nodes, visible zoom 15+ */}
+        {/* Building footprints — non-interactive; shown only for the selected campus */}
         <Source id="buildings-source" type="geojson" data="/data/osm_datacenters.geojson">
           <Layer
-            id="building-fills"
+            id="building-selected-fills"
             type="fill"
-            minzoom={15}
-            filter={IS_POLYGON}
+            minzoom={BUILDING_ZOOM}
+            filter={['==', ['get', 'campus_id'], selectedCampusHash]}
             paint={{
               'fill-color':   areaColorExpr('footprint_m2'),
               'fill-opacity': 0.55,
             }}
           />
           <Layer
-            id="building-outlines"
+            id="building-selected-outlines"
             type="line"
-            minzoom={15}
-            filter={IS_POLYGON}
+            minzoom={BUILDING_ZOOM}
+            filter={['all', IS_POLYGON, ['==', ['get', 'campus_id'], selectedCampusHash]]}
             paint={{
-              'line-color':   '#ffffff',
+              'line-color':   '#22c55e',
               'line-width':   1.5,
-              'line-opacity': 0.75,
-            }}
-          />
-          {/* Selected building outline */}
-          <Layer
-            id="building-selected-outline"
-            type="line"
-            minzoom={15}
-            filter={['==', ['get', 'id'], selectedDC?.id ?? '']}
-            paint={{
-              'line-color': '#22c55e',
-              'line-width': 3,
+              'line-opacity': 0.85,
             }}
           />
           <Layer
-            id="building-nodes"
+            id="building-selected-nodes"
             type="circle"
-            minzoom={15}
-            filter={IS_POINT_GEOM}
+            minzoom={BUILDING_ZOOM}
+            filter={['all', IS_POINT_GEOM, ['==', ['get', 'campus_id'], selectedCampusHash]]}
             paint={{
               'circle-color':        areaColorExpr('footprint_m2'),
               'circle-radius':       6,
               'circle-stroke-width': 1.5,
-              'circle-stroke-color': '#ffffff',
+              'circle-stroke-color': '#22c55e',
             }}
           />
         </Source>
 
-        {/* Simulation DC only — real DCs are now shown by campus/building layers */}
-        <Source
-          id="dc-source"
-          type="geojson"
-          data={dcGeoJSON}
-          cluster={false}
-        >
+        {/* Simulation DC — real campuses are rendered by the campus layer above */}
+        <Source id="dc-source" type="geojson" data={dcGeoJSON} cluster={false}>
           <Layer id="dc-ring"      type="circle" minzoom={DC_MIN_ZOOM} filter={IS_SELECTED} paint={DC_RING_PAINT} />
           <Layer id="dc-points"    type="circle" minzoom={DC_MIN_ZOOM} filter={IS_SIM}      paint={DC_POINT_PAINT} />
           <Layer id="dc-sim-label" type="symbol" minzoom={DC_MIN_ZOOM} filter={IS_SIM}      layout={DC_SIM_LABEL_LAYOUT} paint={DC_SIM_LABEL_PAINT} />

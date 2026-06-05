@@ -6,15 +6,15 @@ import dcPowerData  from '../data/dcPowerByCountry.json';
 // These override the temperature-based model when an operator is matched.
 // WUE null = not publicly disclosed; model estimate is used instead.
 const OPERATOR_CALIBRATION = {
-  'equinix':        { pue: 1.45, wue: 1.07, source: 'Equinix 2023 Global Sustainability Report' },
-  'data4':          { pue: 1.30, wue: 0.50, source: 'Data4 CSR Report 2022'                      },
-  'interxion':      { pue: 1.35, wue: null,  source: 'Digital Realty / Interxion 2022 SR'         },
-  'digital realty': { pue: 1.47, wue: null,  source: 'Digital Realty 2022 Sustainability Report'  },
-  'global switch':  { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report'            },
-  'globalswitch':   { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report'            },
-  'ntt':            { pue: 1.30, wue: null,  source: 'NTT 2023 Sustainability Data'                },
-  'cyrusone':       { pue: 1.45, wue: null,  source: 'CyrusOne 2022 ESG Report'                   },
-  'iron mountain':  { pue: 1.47, wue: null,  source: 'Iron Mountain FY2023 Sustainability Report' },
+  'equinix':        { pue: 1.45, wue: 1.07, source: 'Equinix 2023 Global Sustainability Report', url: 'https://sustainability.equinix.com/' },
+  'data4':          { pue: 1.30, wue: 0.50, source: 'Data4 CSR Report 2022',                      url: 'https://www.data4group.com/en/sustainability/' },
+  'interxion':      { pue: 1.35, wue: null,  source: 'Digital Realty / Interxion 2022 SR',         url: 'https://www.digitalrealty.com/esg-reports' },
+  'digital realty': { pue: 1.47, wue: null,  source: 'Digital Realty 2022 Sustainability Report',  url: 'https://www.digitalrealty.com/esg-reports' },
+  'global switch':  { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',            url: 'https://www.globalswitch.com/sustainability/' },
+  'globalswitch':   { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',            url: 'https://www.globalswitch.com/sustainability/' },
+  'ntt':            { pue: 1.30, wue: null,  source: 'NTT 2023 Sustainability Data',                url: 'https://www.ntt.com/en/sustainability/' },
+  'cyrusone':       { pue: 1.45, wue: null,  source: 'CyrusOne 2022 ESG Report',                   url: 'https://cyrusone.com/esg/' },
+  'iron mountain':  { pue: 1.47, wue: null,  source: 'Iron Mountain FY2023 Sustainability Report', url: 'https://www.ironmountain.com/about/responsibility/sustainability' },
 };
 
 export function getOperatorCalibration(operatorName) {
@@ -172,28 +172,6 @@ export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryC
     fossilPct:       100 - carbon.renewables_pct - (carbon.nuclear_pct ?? 0),
     countryName:     carbon.name,
   };
-}
-
-// ── Country grouping ─────────────────────────────────────────────────────────
-// Groups DCs by country and returns centroid + aggregate stats per country.
-// Uses dc.countryCode if already enriched, otherwise falls back to bbox lookup.
-export function groupDCsByCountry(dataCenters) {
-  const groups = {};
-  for (const dc of dataCenters) {
-    const code = dc.countryCode ?? getCountryFromCoords(dc.lat, dc.lng);
-    if (!groups[code]) groups[code] = { code, lats: [], lngs: [], count: 0, capacityMW: 0 };
-    groups[code].lats.push(dc.lat);
-    groups[code].lngs.push(dc.lng);
-    groups[code].count++;
-    groups[code].capacityMW += dc.capacityMW ?? 0;
-  }
-  return Object.values(groups).map(g => ({
-    countryCode: g.code,
-    lat: g.lats.reduce((a, b) => a + b, 0) / g.lats.length,
-    lng: g.lngs.reduce((a, b) => a + b, 0) / g.lngs.length,
-    dcCount: g.count,
-    totalCapacityMW: Math.round(g.capacityMW),
-  }));
 }
 
 // ── WRI Aqueduct water stress labels ────────────────────────────────────────

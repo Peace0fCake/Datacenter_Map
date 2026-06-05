@@ -3,18 +3,16 @@ import { MapView } from './components/MapView';
 import { DetailsPanel } from './components/DetailsPanel';
 import { SimulationControls } from './components/SimulationControls';
 import { Legend } from './components/Legend';
-import { useDataCenters } from './hooks/useDataCenters';
 import { useClimateData } from './hooks/useClimateData';
 import { useWaterStress } from './hooks/useWaterStress';
-import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, groupDCsByCountry, getCarbonData, allocateDCPower, getCountryDCPower } from './lib/model';
+import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, getCarbonData, allocateDCPower, getCountryDCPower } from './lib/model';
 import { reverseGeocodeCountry } from './hooks/useReverseGeocode';
-
 import './App.css';
 
 let simCounter = 0;
 
 export default function App() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme]           = useState('dark');
   const [activeLayer, setActiveLayer] = useState('none');
   const [countryDCStats, setCountryDCStats] = useState({});
 
@@ -25,32 +23,23 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  const { dataCenters: osmDCs, loading: dcLoading, error: dcError } = useDataCenters();
-  const { getAvgTemp } = useClimateData();
+  const { getAvgTemp }    = useClimateData();
   const { getWaterStress } = useWaterStress();
 
-  const [enrichedDCs, setEnrichedDCs] = useState([]);
-  const [selectedDC, setSelectedDC] = useState(null);
-  const selectedDCRef = useRef(null);
-
+  const [selectedDC, setSelectedDC]       = useState(null);
+  const selectedDCRef                      = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState(null);
 
-  const [simActive, setSimActive] = useState(false);
+  const [simActive, setSimActive]       = useState(false);
   const [simCapacityMW, setSimCapacityMW] = useState(10);
-  // At most one simulated DC at a time
-  const [simDC, setSimDC] = useState(null);
+  const [simDC, setSimDC]               = useState(null);
 
   const enrichingRef = useRef(new Set());
-
-  useEffect(() => {
-    setEnrichedDCs(osmDCs);
-  }, [osmDCs]);
 
   const enrichDC = useCallback(async (dc) => {
     if (enrichingRef.current.has(dc.id)) return;
     enrichingRef.current.add(dc.id);
 
-    // Country resolution: OSM tag → Nominatim → bbox fallback
     const countryCode =
       (dc.country && dc.country.length === 2 ? dc.country.toUpperCase() : null) ??
       (await reverseGeocodeCountry(dc.lat, dc.lng)) ??
@@ -61,45 +50,36 @@ export default function App() {
       getWaterStress(dc.lat, dc.lng),
     ]);
 
-    const calibration = getOperatorCalibration(dc.operator);
-
-    // Use area-based country allocation when available; fall back to capacity model
-    const allocatedMWh = allocateDCPower(
-      dc.footprintM2 ?? null,
-      countryCode,
-      countryDCStats[countryCode] ?? null,
-    );
+    const calibration   = getOperatorCalibration(dc.operator);
+    const allocatedMWh  = allocateDCPower(dc.footprintM2 ?? null, countryCode, countryDCStats[countryCode] ?? null);
 
     const metrics = (dc.capacityMW != null || allocatedMWh != null) ? computeMetrics({
-      capacityMW:            dc.capacityMW ?? 1,
-      utilizationRate:       utilizationFromMW(dc.capacityMW ?? 1),
-      avgTempC:              avgTempC ?? 12,
+      capacityMW:             dc.capacityMW ?? 1,
+      utilizationRate:        utilizationFromMW(dc.capacityMW ?? 1),
+      avgTempC:               avgTempC ?? 12,
       countryCode,
-      reportedPUE:           calibration?.pue ?? null,
-      reportedWUE:           calibration?.wue ?? null,
+      reportedPUE:            calibration?.pue ?? null,
+      reportedWUE:            calibration?.wue ?? null,
       totalEnergyMWhOverride: allocatedMWh,
     }) : null;
 
     const enriched = {
       ...dc,
-      metrics,          // null when capacity unknown
+      metrics,
       waterStress,
       countryCode,
-      avgTempC: avgTempC ?? 12,
-      calibrationSource: calibration?.source ?? null,
+      avgTempC:             avgTempC ?? 12,
+      calibrationSource:    calibration?.source ?? null,
+      calibrationSourceUrl: calibration?.url ?? null,
     };
 
     if (dc.source === 'simulation') {
-      setSimDC((prev) => (prev?.id === dc.id ? enriched : prev));
-    } else {
-      setEnrichedDCs((prev) => prev.map((d) => (d.id === dc.id ? enriched : d)));
+      setSimDC(prev => prev?.id === dc.id ? enriched : prev);
     }
-
-    setSelectedDC((prev) => (prev?.id === dc.id ? enriched : prev));
+    setSelectedDC(prev => prev?.id === dc.id ? enriched : prev);
     enrichingRef.current.delete(dc.id);
   }, [getAvgTemp, getWaterStress, countryDCStats]);
 
-  // Remove the current simulated DC and cancel any in-flight enrichment for it
   const clearSimDC = useCallback(() => {
     const prev = selectedDCRef.current;
     if (prev?.source === 'simulation') {
@@ -117,17 +97,14 @@ export default function App() {
   }, [clearSimDC, enrichDC]);
 
   const handleMapClick = useCallback(({ lat, lng }) => {
-    // Replace any existing simulated DC
     clearSimDC();
     const id = `sim-${++simCounter}`;
     const newDC = {
-      id,
-      lat,
-      lng,
-      name: `Simulated ${simCapacityMW} MW DC`,
-      operator: null,
+      id, lat, lng,
+      name:       `Simulated ${simCapacityMW} MW DC`,
+      operator:   null,
       capacityMW: simCapacityMW,
-      source: 'simulation',
+      source:     'simulation',
     };
     selectedDCRef.current = newDC;
     setSimDC(newDC);
@@ -136,7 +113,7 @@ export default function App() {
   }, [simCapacityMW, clearSimDC, enrichDC]);
 
   const handleSimToggle = useCallback(() => {
-    setSimActive((v) => {
+    setSimActive(v => {
       if (v) {
         clearSimDC();
         selectedDCRef.current = null;
@@ -146,42 +123,57 @@ export default function App() {
     });
   }, [clearSimDC]);
 
-  // Live-update metrics when slider moves, without re-fetching climate/water data
   const handleCapacityChange = useCallback((mw) => {
     setSimCapacityMW(mw);
     const recompute = (dc) => {
       if (!dc) return null;
       const metrics = dc.avgTempC != null ? computeMetrics({
-        capacityMW: mw,
+        capacityMW:     mw,
         utilizationRate: utilizationFromMW(mw),
-        avgTempC: dc.avgTempC,
-        countryCode: dc.countryCode,
-        reportedPUE: null,
-        reportedWUE: null,
+        avgTempC:        dc.avgTempC,
+        countryCode:     dc.countryCode,
+        reportedPUE:     null,
+        reportedWUE:     null,
       }) : null;
       return { ...dc, capacityMW: mw, name: `Simulated ${mw} MW DC`, metrics };
     };
     setSimDC(recompute);
-    setSelectedDC((prev) => prev?.source === 'simulation' ? recompute(prev) : prev);
+    setSelectedDC(prev => prev?.source === 'simulation' ? recompute(prev) : prev);
   }, []);
 
-  const countryGroups = useMemo(() => groupDCsByCountry(enrichedDCs), [enrichedDCs]);
+  // Country groups derived from static campus stats — drives the country label layer
+  const countryGroups = useMemo(() =>
+    Object.entries(countryDCStats)
+      .filter(([k]) => k !== '_note')
+      .map(([code, stats]) => ({ countryCode: code, dcCount: stats.campus_count })),
+    [countryDCStats],
+  );
 
   const handleSelectCountry = useCallback((code) => {
-    const group = countryGroups.find(g => g.countryCode === code);
-    if (!group) return;
+    const stats = countryDCStats[code];
+    if (!stats) return;
     clearSimDC();
     selectedDCRef.current = null;
     setSelectedDC(null);
     setSelectedCountry({
-      ...group,
-      carbon:     getCarbonData(code),
-      dcPower:    getCountryDCPower(code),
-      osm:        countryDCStats[code] ?? null,
+      countryCode: code,
+      dcCount:     stats.campus_count,
+      totalCapacityMW: 0,
+      carbon:  getCarbonData(code),
+      dcPower: getCountryDCPower(code),
+      osm:     stats,
     });
-  }, [countryGroups, clearSimDC]);
+  }, [countryDCStats, clearSimDC]);
 
-  const allDCs = simDC ? [...enrichedDCs, simDC] : enrichedDCs;
+  const totalCampuses = useMemo(() =>
+    Object.entries(countryDCStats)
+      .filter(([k]) => k !== '_note')
+      .reduce((sum, [, s]) => sum + (s.campus_count || 0), 0),
+    [countryDCStats],
+  );
+
+  // Only the simulation DC goes through the dynamic layer; real DCs come from static GeoJSON
+  const simDCs = simDC ? [simDC] : [];
 
   return (
     <div className={`app theme-${theme}`}>
@@ -191,8 +183,6 @@ export default function App() {
           <span className="header-sub">Environmental footprint across Europe</span>
         </div>
         <div className="header-controls">
-          {dcLoading && <div className="loading-badge">Loading OSM data…</div>}
-          {dcError && <div className="error-badge" title={dcError}>OSM unavailable · fallback</div>}
           <button
             className="theme-toggle"
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
@@ -210,7 +200,7 @@ export default function App() {
           <div className="layer-controls">
             <div className="section-label" style={{ padding: '16px 16px 8px' }}>Map Layers</div>
             {[
-              { id: 'none',   label: 'None',                 src: null },
+              { id: 'none',   label: 'None' },
               { id: 'carbon', label: 'Grid carbon intensity', src: 'Ember Climate 2023' },
               { id: 'water',  label: 'Baseline water stress', src: 'WRI Aqueduct 3.0' },
             ].map(({ id, label, src }) => (
@@ -227,12 +217,14 @@ export default function App() {
           </div>
 
           <Legend />
-          <div className="sidebar-stats">
-            <div className="stat">
-              <span className="stat-value">{osmDCs.length}</span>
-              <span className="stat-label">DCs mapped (Europe)</span>
+          {totalCampuses > 0 && (
+            <div className="sidebar-stats">
+              <div className="stat">
+                <span className="stat-value">{totalCampuses.toLocaleString()}</span>
+                <span className="stat-label">campuses mapped (Europe)</span>
+              </div>
             </div>
-          </div>
+          )}
         </aside>
 
         <div className="map-wrapper">
@@ -244,7 +236,7 @@ export default function App() {
             onCapacityChange={handleCapacityChange}
           />
           <MapView
-            dataCenters={allDCs}
+            dataCenters={simDCs}
             countryGroups={countryGroups}
             selectedDC={selectedDC}
             onSelectDC={handleSelectDC}
