@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { waterStressLabel, getCarbonData } from '../lib/model';
+import { InfoTip, GLOSSARY } from './InfoTip';
+import { OperatorPanel } from './OperatorPanel';
 
 // Logarithmic slider: internal range 0–100 maps to 1–500 MW.
 // Gives fine resolution at small sizes, still reaches hyperscale campus.
@@ -97,7 +99,7 @@ function ElectricityMixBar({ renewablesPct, nuclearPct, fossilPct }) {
 function WaterStressSection({ dc, ws }) {
   return (
     <div className="ws-section">
-      <div className="ws-header">WRI Aqueduct — Baseline Water Stress</div>
+      <div className="ws-header"><InfoTip id="waterStress">WRI Aqueduct — Baseline Water Stress</InfoTip></div>
       {dc.waterStress?.score != null ? (
         <>
           <WaterStressGauge score={dc.waterStress.score} label={ws.label} color={ws.color} />
@@ -135,11 +137,66 @@ function WaterStressGauge({ score, label, color }) {
   );
 }
 
-function CountryPanel({ country, onClose }) {
+function PipelineBar({ pipeline }) {
+  const total = pipeline.current_mw + pipeline.construction_mw + pipeline.planned_mw;
+  if (!total) return null;
+  const pCurrent = (pipeline.current_mw / total * 100).toFixed(1);
+  const pConst   = (pipeline.construction_mw / total * 100).toFixed(1);
+  const pPlanned = (pipeline.planned_mw / total * 100).toFixed(1);
+  return (
+    <div className="pipeline-card">
+      <div className="pipeline-bar">
+        <div className="pipeline-seg pipeline-current" style={{ width: `${pCurrent}%` }} title={`Operating: ${pipeline.current_mw} MW`} />
+        <div className="pipeline-seg pipeline-construction" style={{ width: `${pConst}%` }} title={`Construction: ${pipeline.construction_mw} MW`} />
+        <div className="pipeline-seg pipeline-planned" style={{ width: `${pPlanned}%` }} title={`Planned: ${pipeline.planned_mw} MW`} />
+      </div>
+      <div className="pipeline-rows">
+        <div className="pipeline-row">
+          <span className="pipeline-dot pipeline-current" />
+          <span className="pipeline-row-label">Operating</span>
+          <span className="pipeline-row-mw">{pipeline.current_mw.toLocaleString()} MW</span>
+        </div>
+        <div className="pipeline-row">
+          <span className="pipeline-dot pipeline-construction" />
+          <span className="pipeline-row-label">Under construction</span>
+          <span className="pipeline-row-mw">{pipeline.construction_mw.toLocaleString()} MW</span>
+        </div>
+        <div className="pipeline-row">
+          <span className="pipeline-dot pipeline-planned" />
+          <span className="pipeline-row-label">Announced / planned</span>
+          <span className="pipeline-row-mw">{pipeline.planned_mw.toLocaleString()} MW</span>
+        </div>
+      </div>
+      <div className="pipeline-total">
+        {total.toLocaleString()} MW total pipeline · <span className="pipeline-src">CBRE / DCD 2024</span>
+      </div>
+    </div>
+  );
+}
+
+const TYPE_LABEL = { hyperscaler: 'Hyperscaler', cloud: 'Cloud', colocation: 'Colo', carrier: 'Carrier', enterprise: 'Enterprise' };
+const TYPE_CLASS = { hyperscaler: 'type-hyper', cloud: 'type-cloud', colocation: 'type-colo', carrier: 'type-carrier', enterprise: 'type-enterprise' };
+
+function CountryPanel({ country, onClose, onFlyTo, onOperatorClick }) {
+  const [opSort, setOpSort] = useState('mw'); // 'mw' | 'count'
+
   const fossilPct = 100 - (country.carbon.renewables_pct ?? 0) - (country.carbon.nuclear_pct ?? 0);
-  const osm = country.osm;
-  const dcPower = country.dcPower;
+  const osm      = country.osm;
+  const pipeline = country.pipeline ?? null;
+  const dcPower  = country.dcPower;
   const footprintHa = osm?.total_footprint_m2 ? (osm.total_footprint_m2 / 10_000).toFixed(1) : null;
+  const topCampuses  = osm?.top_campuses  ?? [];
+  const rawOperators = osm?.top_operators ?? [];
+  const typeCounts   = osm?.type_counts   ?? {};
+  const maxCap       = topCampuses[0]?.cap_mw ?? 1;
+
+  const topOperators = [...rawOperators].sort((a, b) =>
+    opSort === 'mw' ? (b.cap_mw ?? 0) - (a.cap_mw ?? 0) : b.count - a.count
+  );
+  const maxOpVal = opSort === 'mw'
+    ? (topOperators[0]?.cap_mw ?? 1)
+    : (topOperators[0]?.count  ?? 1);
+
   return (
     <>
       <div className="panel-header">
@@ -151,6 +208,11 @@ function CountryPanel({ country, onClose }) {
       </div>
       <div className="panel-tags">
         <span className="tag tag-country">{country.countryCode}</span>
+        {Object.entries(typeCounts).filter(([,n]) => n > 0).map(([t, n]) => (
+          GLOSSARY[t]
+            ? <InfoTip key={t} id={t}><span className={`tag dc-type-tag ${TYPE_CLASS[t]}`}>{TYPE_LABEL[t]} {n}</span></InfoTip>
+            : <span key={t} className={`tag dc-type-tag ${TYPE_CLASS[t]}`}>{TYPE_LABEL[t]} {n}</span>
+        ))}
       </div>
       <div className="panel-section">
         <SectionLabel>Data Centers · OSM</SectionLabel>
@@ -172,15 +234,122 @@ function CountryPanel({ country, onClose }) {
             </div>
             <div className="country-power-meta">
               <span>{dcPower.pct_national}% of national grid</span>
-              <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>
-                {dcPower.source}
-              </span>
+              {dcPower.url
+                ? <a href={dcPower.url} target="_blank" rel="noopener noreferrer"
+                     className={`data-badge data-badge-link ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>
+                    {dcPower.source} ↗
+                  </a>
+                : <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>
+                    {dcPower.source}
+                  </span>
+              }
             </div>
+            {dcPower.confidence === 'low' && (
+              <p className="country-power-warning">
+                Derived estimate only — actual 2024 consumption likely 20–40% higher due to AI infrastructure growth.
+              </p>
+            )}
           </div>
         )}
       </div>
+
+      {topCampuses.length > 0 && (
+        <div className="panel-section">
+          <SectionLabel><InfoTip id="campus">Largest campuses by est. capacity (OSM)</InfoTip></SectionLabel>
+          <div className="campus-ranking">
+            {topCampuses.map((c, i) => {
+              const canFly = c.lat && c.lon;
+              return (
+                <div
+                  key={c.id ?? i}
+                  className={`campus-rank-row ${canFly ? 'campus-rank-row--link' : ''}`}
+                  onClick={canFly ? () => onFlyTo?.({ lat: c.lat, lng: c.lon, zoom: 15 }) : undefined}
+                  title={canFly ? `Zoom to ${c.name}` : undefined}
+                >
+                  <span className="rank-num">{i + 1}</span>
+                  <div className="rank-info">
+                    <div className="rank-name-row">
+                      <span className="rank-name">{c.name}</span>
+                      <span className={`rank-type ${TYPE_CLASS[c.type]}`}>{TYPE_LABEL[c.type]}</span>
+                    </div>
+                    <div className="rank-bar-row">
+                      <div className="rank-bar-track">
+                        <div
+                          className={`rank-bar-fill ${TYPE_CLASS[c.type]}`}
+                          style={{ width: `${Math.round((c.cap_mw ?? 0) / maxCap * 100)}%` }}
+                        />
+                      </div>
+                      <span className="rank-mw">{c.cap_mw != null ? `${c.cap_mw} MW` : `${(c.fp_m2 / 10000).toFixed(1)} ha`}</span>
+                    </div>
+                  </div>
+                  {canFly && <span className="rank-fly">↗</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {topOperators.length > 0 && (
+        <div className="panel-section">
+          <div className="section-label-row">
+            <SectionLabel>Operators</SectionLabel>
+            <div className="sort-toggle">
+              <button
+                className={`sort-btn ${opSort === 'mw' ? 'active' : ''}`}
+                onClick={() => setOpSort('mw')}
+              >by MW</button>
+              <button
+                className={`sort-btn ${opSort === 'count' ? 'active' : ''}`}
+                onClick={() => setOpSort('count')}
+              >by campuses</button>
+            </div>
+          </div>
+          <div className="campus-ranking">
+            {topOperators.map((op, i) => (
+              <div
+                key={op.name}
+                className="campus-rank-row campus-rank-row--link"
+                onClick={() => onOperatorClick?.(op.name)}
+                title={`View ${op.name} operator page`}
+              >
+                <span className="rank-num">{i + 1}</span>
+                <div className="rank-info">
+                  <div className="rank-name-row">
+                    <span className="rank-name">{op.name}</span>
+                    <span className={`rank-type ${TYPE_CLASS[op.type]}`}>{TYPE_LABEL[op.type]}</span>
+                  </div>
+                  <div className="rank-bar-row">
+                    <div className="rank-bar-track">
+                      <div
+                        className={`rank-bar-fill ${TYPE_CLASS[op.type]}`}
+                        style={{ width: `${Math.round((opSort === 'mw' ? (op.cap_mw ?? 0) : op.count) / maxOpVal * 100)}%` }}
+                      />
+                    </div>
+                    <span className="rank-mw">
+                      {opSort === 'mw'
+                        ? `${op.cap_mw ? `${op.cap_mw} MW · ` : ''}${op.count} campus${op.count !== 1 ? 'es' : ''}`
+                        : `${op.count} campus${op.count !== 1 ? 'es' : ''}${op.cap_mw ? ` · ${op.cap_mw} MW` : ''}`
+                      }
+                    </span>
+                  </div>
+                </div>
+                <span className="rank-fly">↗</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {pipeline && (
+        <div className="panel-section">
+          <SectionLabel>Capacity Pipeline</SectionLabel>
+          <PipelineBar pipeline={pipeline} />
+        </div>
+      )}
+
       <div className="panel-section">
-        <SectionLabel>Grid · Ember Climate 2023</SectionLabel>
+        <SectionLabel>Grid · <a href="https://ember-climate.org/insights/research/global-electricity-review-2024/" target="_blank" rel="noopener noreferrer" className="source-link">Ember 2024</a> (2023 data)</SectionLabel>
         <div className="co2-card">
           <BigNumber value={country.carbon.intensity_gco2_kwh} unit="gCO₂/kWh" />
           <div className="clean-bar-wrap" style={{ marginTop: 10 }}>
@@ -203,9 +372,34 @@ function CountryPanel({ country, onClose }) {
   );
 }
 
-export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityChange }) {
+export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityChange, onFlyTo }) {
   const [mixOpen, setMixOpen] = useState(false);
   const [sliderPos, setSliderPos] = useState(() => mwToSlider(simCapacityMW));
+  const [operatorName, setOperatorName] = useState(null);
+
+  // Clear operator panel when country changes
+  useEffect(() => { setOperatorName(null); }, [country?.countryCode]);
+
+  // ── Panel resize ────────────────────────────────────────────────────────
+  const [panelW, setPanelW] = useState(340);
+  const panelWRef = useRef(panelW);
+  panelWRef.current = panelW;
+  const startPanelResize = useCallback((e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = panelWRef.current;
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (me) => setPanelW(Math.max(240, Math.min(640, startW + me.clientX - startX)));
+    const onUp   = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, []);
 
   const handleSlider = (e) => {
     const pos = Number(e.target.value);
@@ -220,10 +414,22 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
   const householdsPerDay = m ? Math.round(m.euHouseholds / 365) : 0;
 
   return (
-    <div className={`details-panel-wrapper ${isOpen ? 'open' : ''}`}>
+    <div className={`details-panel-wrapper ${isOpen ? 'open' : ''}`} style={{ width: panelW }}>
       <div className="details-panel">
-        {country && !dc && (
-          <CountryPanel country={country} onClose={onClose} />
+        {country && !dc && operatorName && (
+          <OperatorPanel
+            name={operatorName}
+            onBack={() => setOperatorName(null)}
+            onFlyTo={onFlyTo}
+          />
+        )}
+        {country && !dc && !operatorName && (
+          <CountryPanel
+            country={country}
+            onClose={onClose}
+            onFlyTo={onFlyTo}
+            onOperatorClick={setOperatorName}
+          />
         )}
         {dc && (
           <>
@@ -351,14 +557,14 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
 
                 {/* Electricity + Households */}
                 <div className="panel-section">
-                  <SectionLabel>Electricity</SectionLabel>
+                  <SectionLabel><InfoTip id="totalEnergyMWh">Electricity</InfoTip></SectionLabel>
                   <div className="card-grid">
                     <div className="metric-card">
                       <div className="card-icon">⚡</div>
                       <BigNumber value={m.totalEnergyMWh.toLocaleString()} unit="MWh/yr" />
-                      <CoolingBar coolingRatio={m.coolingRatio} />
+                      <InfoTip id="itLoad"><CoolingBar coolingRatio={m.coolingRatio} /></InfoTip>
                       <div className="card-pue">
-                        PUE {m.pue}
+                        <InfoTip id="pue">PUE</InfoTip> {m.pue}
                         <ReportedBadge reported={m.pueReported} url={dc.calibrationSourceUrl} />
                       </div>
                     </div>
@@ -376,7 +582,7 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
 
                 {/* CO2 */}
                 <div className="panel-section">
-                  <SectionLabel>CO₂ Emissions</SectionLabel>
+                  <SectionLabel><InfoTip id="carbonIntensity">CO₂ Emissions</InfoTip></SectionLabel>
                   <div className="co2-card">
                     <div className="co2-main">
                       <BigNumber value={m.co2TonnesPerYear.toLocaleString()} unit="tCO₂eq/yr" />
@@ -414,7 +620,7 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                       unit="m³/yr"
                       sub={
                         <>
-                          WUE {m.wue} L/kWh
+                          <InfoTip id="wue">WUE</InfoTip> {m.wue} L/kWh
                           <ReportedBadge reported={m.wueReported} url={dc.calibrationSourceUrl} />
                         </>
                       }
@@ -427,7 +633,10 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                   <span>PUE {m.pue} · {m.avgTempC}°C avg · {(m.utilizationRate * 100).toFixed(0)}% util.</span>
                   <span className="model-note">
                     {dc.footprintM2
-                      ? dc.isSite ? 'building areas · JRC 2023' : 'area model · JRC 2023'
+                      ? <InfoTip id="allocatedPower">
+                          {dc.isSite ? 'building areas · ' : 'area model · '}
+                          <a href="https://publications.jrc.ec.europa.eu/repository/handle/JRC135926" target="_blank" rel="noopener noreferrer" className="source-link">JRC 2023</a>
+                        </InfoTip>
                       : 'capacity model'}
                   </span>
                 </div>
@@ -450,7 +659,7 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
                   const fossilPct = 100 - carbon.renewables_pct - (carbon.nuclear_pct ?? 0);
                   return (
                     <div className="panel-section">
-                      <SectionLabel>Grid · Ember Climate 2023</SectionLabel>
+                      <SectionLabel>Grid · <a href="https://ember-climate.org/insights/research/global-electricity-review-2024/" target="_blank" rel="noopener noreferrer" className="source-link">Ember 2024</a> (2023 data)</SectionLabel>
                       <div className="co2-card">
                         <span className="co2-intensity">{carbon.name} · {carbon.intensity_gco2_kwh} gCO₂/kWh</span>
                         <div className="clean-bar-wrap" style={{ marginTop: 8 }}>
@@ -484,6 +693,9 @@ export function DetailsPanel({ dc, country, onClose, simCapacityMW, onCapacityCh
           </>
         )}
       </div>
+      {isOpen && (
+        <div className="panel-resize-handle" onMouseDown={startPanelResize} title="Drag to resize" />
+      )}
     </div>
   );
 }

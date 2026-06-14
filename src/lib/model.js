@@ -6,15 +6,39 @@ import dcPowerData  from '../data/dcPowerByCountry.json';
 // These override the temperature-based model when an operator is matched.
 // WUE null = not publicly disclosed; model estimate is used instead.
 const OPERATOR_CALIBRATION = {
+  // ── Colocation ────────────────────────────────────────────────────────────
   'equinix':        { pue: 1.45, wue: 1.07, source: 'Equinix 2023 Global Sustainability Report', url: 'https://sustainability.equinix.com/' },
   'data4':          { pue: 1.30, wue: 0.50, source: 'Data4 CSR Report 2022',                      url: 'https://www.data4group.com/en/sustainability/' },
-  'interxion':      { pue: 1.35, wue: null,  source: 'Digital Realty / Interxion 2022 SR',         url: 'https://www.digitalrealty.com/esg-reports' },
-  'digital realty': { pue: 1.47, wue: null,  source: 'Digital Realty 2022 Sustainability Report',  url: 'https://www.digitalrealty.com/esg-reports' },
-  'global switch':  { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',            url: 'https://www.globalswitch.com/sustainability/' },
-  'globalswitch':   { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',            url: 'https://www.globalswitch.com/sustainability/' },
-  'ntt':            { pue: 1.30, wue: null,  source: 'NTT 2023 Sustainability Data',                url: 'https://www.ntt.com/en/sustainability/' },
-  'cyrusone':       { pue: 1.45, wue: null,  source: 'CyrusOne 2022 ESG Report',                   url: 'https://cyrusone.com/esg/' },
-  'iron mountain':  { pue: 1.47, wue: null,  source: 'Iron Mountain FY2023 Sustainability Report', url: 'https://www.ironmountain.com/about/responsibility/sustainability' },
+  'interxion':      { pue: 1.35, wue: null,  source: 'Digital Realty / Interxion 2022 SR',        url: 'https://www.digitalrealty.com/esg-reports' },
+  'digital realty': { pue: 1.47, wue: null,  source: 'Digital Realty 2022 Sustainability Report', url: 'https://www.digitalrealty.com/esg-reports' },
+  'global switch':  { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',           url: 'https://www.globalswitch.com/sustainability/' },
+  'globalswitch':   { pue: 1.39, wue: null,  source: 'Global Switch 2023 Annual Report',           url: 'https://www.globalswitch.com/sustainability/' },
+  'ntt':            { pue: 1.30, wue: null,  source: 'NTT 2023 Sustainability Data',               url: 'https://www.ntt.com/en/sustainability/' },
+  'cyrusone':       { pue: 1.45, wue: null,  source: 'CyrusOne 2022 ESG Report',                  url: 'https://cyrusone.com/esg/' },
+  'iron mountain':  { pue: 1.47, wue: null,  source: 'Iron Mountain FY2023 Sustainability Report',url: 'https://www.ironmountain.com/about/responsibility/sustainability' },
+  'vantage':        { pue: 1.35, wue: null,  source: 'Vantage Data Centers 2023 ESG Report',      url: 'https://vantage-dc.com/sustainability/' },
+
+  // ── Cloud / regional ──────────────────────────────────────────────────────
+  // OVH Group: French public company required to publish DPEF (Déclaration de
+  // Performance Extra-Financière). Fleet-average PUE ~1.40 from 2022/2023 DPEF.
+  // Their Gravelines (GRA) campus uses proprietary water cooling and claims
+  // PUE 1.09–1.15 — significantly better than the fleet average used here.
+  'ovh':            { pue: 1.40, wue: null,  source: 'OVH Group DPEF 2023 (fleet average; Gravelines site ~1.15)', url: 'https://corporate.ovhcloud.com/en/sustainability/environment/' },
+  'ovhcloud':       { pue: 1.40, wue: null,  source: 'OVH Group DPEF 2023 (fleet average; Gravelines site ~1.15)', url: 'https://corporate.ovhcloud.com/en/sustainability/environment/' },
+
+  // Hetzner: publishes environmental data; uses adiabatic / outside-air cooling
+  // in Germany. Cites PUE 1.2 for Falkenstein and Nuremberg campuses.
+  'hetzner':        { pue: 1.20, wue: null,  source: 'Hetzner Environmental Report 2023',         url: 'https://www.hetzner.com/unternehmen/umweltschutz/' },
+
+  // ── Hyperscalers ─────────────────────────────────────────────────────────
+  // Microsoft: reported global average 1.12 in FY2023 Sustainability Report.
+  'microsoft':      { pue: 1.12, wue: null,  source: 'Microsoft FY2023 Sustainability Report',    url: 'https://www.microsoft.com/en-us/sustainability' },
+  'azure':          { pue: 1.12, wue: null,  source: 'Microsoft FY2023 Sustainability Report',    url: 'https://www.microsoft.com/en-us/sustainability' },
+  // Google: reported 1.10 global average in 2023 Environmental Report.
+  'google':         { pue: 1.10, wue: 1.10,  source: 'Google 2023 Environmental Report',         url: 'https://sustainability.google/reports/' },
+  // AWS: reported weighted average 1.15 in 2022 Sustainability Report.
+  'amazon':         { pue: 1.15, wue: null,  source: 'AWS 2022 Sustainability Report',            url: 'https://sustainability.aboutamazon.com/' },
+  'aws':            { pue: 1.15, wue: null,  source: 'AWS 2022 Sustainability Report',            url: 'https://sustainability.aboutamazon.com/' },
 };
 
 export function getOperatorCalibration(operatorName) {

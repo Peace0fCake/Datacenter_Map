@@ -3,6 +3,7 @@ import { MapView } from './components/MapView';
 import { DetailsPanel } from './components/DetailsPanel';
 import { SimulationControls } from './components/SimulationControls';
 import { Legend } from './components/Legend';
+import { CapacityOutlook } from './components/CapacityOutlook';
 import { useClimateData } from './hooks/useClimateData';
 import { useWaterStress } from './hooks/useWaterStress';
 import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, getCarbonData, allocateDCPower, getCountryDCPower } from './lib/model';
@@ -13,13 +14,26 @@ let simCounter = 0;
 
 export default function App() {
   const [theme, setTheme]           = useState('dark');
+  const [outlookOpen, setOutlookOpen] = useState(false);
   const [activeLayer, setActiveLayer] = useState('none');
   const [countryDCStats, setCountryDCStats] = useState({});
+  const [pipelineByCountry, setPipelineByCountry] = useState({});
 
   useEffect(() => {
     fetch('/data/country_dc_stats.json')
       .then(r => r.json())
       .then(d => setCountryDCStats(d))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/data/capacityOutlook.json')
+      .then(r => r.json())
+      .then(d => {
+        const lookup = {};
+        for (const c of d.pipeline.countries) lookup[c.code] = c;
+        setPipelineByCountry(lookup);
+      })
       .catch(() => {});
   }, []);
 
@@ -29,6 +43,32 @@ export default function App() {
   const [selectedDC, setSelectedDC]       = useState(null);
   const selectedDCRef                      = useRef(null);
   const [selectedCountry, setSelectedCountry] = useState(null);
+
+  const mapViewRef = useRef(null);
+  const handleFlyTo = useCallback(({ lat, lng, zoom }) => {
+    mapViewRef.current?.flyTo({ lat, lng, zoom });
+  }, []);
+
+  // ── Sidebar resize ────────────────────────────────────────────────────────
+  const [sidebarW, setSidebarW] = useState(280);
+  const sidebarWRef = useRef(sidebarW);
+  sidebarWRef.current = sidebarW;
+  const startSidebarResize = useCallback((e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = sidebarWRef.current;
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (me) => setSidebarW(Math.max(160, Math.min(480, startW + me.clientX - startX)));
+    const onUp   = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, []);
 
   const [simActive, setSimActive]       = useState(false);
   const [simCapacityMW, setSimCapacityMW] = useState(10);
@@ -159,11 +199,12 @@ export default function App() {
       countryCode: code,
       dcCount:     stats.campus_count,
       totalCapacityMW: 0,
-      carbon:  getCarbonData(code),
-      dcPower: getCountryDCPower(code),
-      osm:     stats,
+      carbon:   getCarbonData(code),
+      dcPower:  getCountryDCPower(code),
+      osm:      stats,
+      pipeline: pipelineByCountry[code] ?? null,
     });
-  }, [countryDCStats, clearSimDC]);
+  }, [countryDCStats, pipelineByCountry, clearSimDC]);
 
   const totalCampuses = useMemo(() =>
     Object.entries(countryDCStats)
@@ -183,6 +224,9 @@ export default function App() {
           <span className="header-sub">Environmental footprint across Europe</span>
         </div>
         <div className="header-controls">
+          <button className="outlook-btn" onClick={() => setOutlookOpen(true)}>
+            Capacity Outlook
+          </button>
           <button
             className="theme-toggle"
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
@@ -194,14 +238,14 @@ export default function App() {
       </header>
 
       <main className="app-body">
-        <aside className="sidebar">
+        <aside className="sidebar" style={{ width: sidebarW }}>
           <SimulationControls active={simActive} onToggle={handleSimToggle} />
 
           <div className="layer-controls">
             <div className="section-label" style={{ padding: '16px 16px 8px' }}>Map Layers</div>
             {[
               { id: 'none',   label: 'None' },
-              { id: 'carbon', label: 'Grid carbon intensity', src: 'Ember Climate 2023' },
+              { id: 'carbon', label: 'Grid carbon intensity', src: 'Ember 2024 (2023 data)' },
               { id: 'water',  label: 'Baseline water stress', src: 'WRI Aqueduct 3.0' },
             ].map(({ id, label, src }) => (
               <label key={id} className={`layer-radio ${activeLayer === id ? 'checked' : ''}`}>
@@ -226,6 +270,7 @@ export default function App() {
             </div>
           )}
         </aside>
+        <div className="sidebar-resize-handle" onMouseDown={startSidebarResize} />
 
         <div className="map-wrapper">
           <DetailsPanel
@@ -234,8 +279,10 @@ export default function App() {
             onClose={() => { handleSelectDC(null); setSelectedCountry(null); }}
             simCapacityMW={simCapacityMW}
             onCapacityChange={handleCapacityChange}
+            onFlyTo={handleFlyTo}
           />
           <MapView
+            ref={mapViewRef}
             dataCenters={simDCs}
             countryGroups={countryGroups}
             selectedDC={selectedDC}
@@ -248,6 +295,7 @@ export default function App() {
           />
         </div>
       </main>
+      {outlookOpen && <CapacityOutlook onClose={() => setOutlookOpen(false)} />}
     </div>
   );
 }
