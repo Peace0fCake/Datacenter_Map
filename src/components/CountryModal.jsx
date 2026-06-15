@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getCarbonData, getDCWattsPerCapita } from '../lib/model';
-import { InfoTip } from './InfoTip';
+import { HoverDef } from './InfoTip';
 import { OperatorPanel } from './OperatorPanel';
+
+// ── Density presets ───────────────────────────────────────────────────────────
+const DENSITY = {
+  full:     { compactRows: true,  statStrip: true,  topN: 5,    countryTopN: 8,   compactPipeline: true  },
+  moderate: { compactRows: true,  statStrip: false, topN: null, countryTopN: null, compactPipeline: false },
+  merge:    { compactRows: false, statStrip: false, topN: null, countryTopN: null, compactPipeline: false },
+};
+const cfgFor = (d) => DENSITY[d] ?? DENSITY.full;
+const kMW = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n)}`);
 
 // ── Shared primitives ────────────────────────────────────────────────────────
 
@@ -17,6 +26,21 @@ function BigNumber({ value, unit, sub }) {
         <span className="big-unit">{unit}</span>
       </div>
       {sub && <span className="big-sub">{sub}</span>}
+    </div>
+  );
+}
+
+// Compact horizontal stat strip (used in `full` density)
+function StatStrip({ items }) {
+  return (
+    <div className="stat-strip">
+      {items.filter(Boolean).map((it, i) => (
+        <span key={i} className="stat-strip-item">
+          <span className="stat-strip-val">{it.value}</span>
+          {it.unit && <span className="stat-strip-unit">{it.unit}</span>}
+          <span className="stat-strip-label">{it.label}</span>
+        </span>
+      ))}
     </div>
   );
 }
@@ -43,7 +67,7 @@ function ElectricityMixBar({ renewablesPct, nuclearPct, fossilPct }) {
   );
 }
 
-function PipelineBar({ pipeline }) {
+function PipelineBar({ pipeline, compact }) {
   const total = pipeline.current_mw + pipeline.construction_mw + pipeline.planned_mw;
   if (!total) return null;
   const pCurrent = (pipeline.current_mw / total * 100).toFixed(1);
@@ -56,12 +80,23 @@ function PipelineBar({ pipeline }) {
         <div className="pipeline-seg pipeline-construction" style={{ width: `${pConst}%` }}   title={`Construction: ${pipeline.construction_mw} MW`} />
         <div className="pipeline-seg pipeline-planned"      style={{ width: `${pPlanned}%` }} title={`Planned: ${pipeline.planned_mw} MW`} />
       </div>
-      <div className="pipeline-rows">
-        <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Operating</span><span className="pipeline-row-mw">{pipeline.current_mw.toLocaleString()} MW</span></div>
-        <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">{pipeline.construction_mw.toLocaleString()} MW</span></div>
-        <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">{pipeline.planned_mw.toLocaleString()} MW</span></div>
-      </div>
-      <div className="pipeline-total">{total.toLocaleString()} MW total pipeline · <span className="pipeline-src">CBRE / DCD 2024</span></div>
+      {compact ? (
+        <div className="pipeline-caption">
+          <span><span className="pipeline-dot pipeline-construction" />{kMW(pipeline.construction_mw)} building</span>
+          <span><span className="pipeline-dot pipeline-planned" />{kMW(pipeline.planned_mw)} planned</span>
+          <span><span className="pipeline-dot pipeline-current" />{kMW(pipeline.current_mw)} operating</span>
+          <span className="pipeline-caption-total">CBRE/DCD ’24</span>
+        </div>
+      ) : (
+        <>
+          <div className="pipeline-rows">
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">{pipeline.construction_mw.toLocaleString()} MW</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">{pipeline.planned_mw.toLocaleString()} MW</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Operating today</span><span className="pipeline-row-mw">{pipeline.current_mw.toLocaleString()} MW</span></div>
+          </div>
+          <div className="pipeline-total">{kMW(pipeline.construction_mw + pipeline.planned_mw)} MW of new capacity coming · <span className="pipeline-src">CBRE / DCD 2024</span></div>
+        </>
+      )}
     </div>
   );
 }
@@ -71,7 +106,47 @@ const TYPE_CLASS = { hyperscaler: 'type-hyper', cloud: 'type-cloud', colocation:
 const TYPE_COLOR = { hyperscaler: '#a855f7', cloud: '#22c55e', colocation: '#0ea5e9', carrier: '#eab308', enterprise: '#64748b' };
 const TYPE_ORDER = ['hyperscaler', 'cloud', 'colocation', 'carrier', 'enterprise'];
 
-// Stacked bar showing operator type distribution within a country's bar
+// Operator-type chip with a hover/click definition
+function TypeChip({ typeId, typeLabel, typeClass }) {
+  if (!typeLabel) return null;
+  const chip = <span className={`rank-type ${typeClass}`}>{typeLabel}</span>;
+  return typeId ? <HoverDef id={typeId}>{chip}</HoverDef> : chip;
+}
+
+// Unified ranked row — single-line (compact) or two-line (spacious)
+function RankRow({ rank, name, typeId, typeLabel, typeClass, barPct, value, onClick, compact, fly }) {
+  const linkCls = onClick ? 'rank-row--link' : '';
+  if (compact) {
+    return (
+      <div className={`rank-row-compact ${linkCls}`} onClick={onClick} title={onClick ? name : undefined}>
+        <span className="rank-num">{rank}</span>
+        <span className="rank-name">{name}</span>
+        <TypeChip typeId={typeId} typeLabel={typeLabel} typeClass={typeClass} />
+        <div className="rank-mini-track"><div className={`rank-mini-fill ${typeClass}`} style={{ width: `${barPct}%` }} /></div>
+        <span className="rank-val">{value}</span>
+        {fly && <span className="rank-fly">↗</span>}
+      </div>
+    );
+  }
+  return (
+    <div className={`campus-rank-row ${linkCls}`} onClick={onClick} title={onClick ? name : undefined}>
+      <span className="rank-num">{rank}</span>
+      <div className="rank-info">
+        <div className="rank-name-row">
+          <span className="rank-name">{name}</span>
+          <TypeChip typeId={typeId} typeLabel={typeLabel} typeClass={typeClass} />
+        </div>
+        <div className="rank-bar-row">
+          <div className="rank-bar-track"><div className={`rank-bar-fill ${typeClass}`} style={{ width: `${barPct}%` }} /></div>
+          <span className="rank-mw">{value}</span>
+        </div>
+      </div>
+      {fly && <span className="rank-fly">↗</span>}
+    </div>
+  );
+}
+
+// Stacked operator-type bar for the Europe country ranking
 function TypeStackBar({ typeCounts, widthPct }) {
   const total = Object.values(typeCounts ?? {}).reduce((s, n) => s + n, 0);
   if (!total || widthPct <= 0) return (
@@ -101,10 +176,24 @@ function TypeStackBar({ typeCounts, widthPct }) {
   );
 }
 
+// "Show N more / less" expander
+function ShowMore({ hidden, expanded, onToggle }) {
+  if (hidden <= 0) return null;
+  return (
+    <button className="rank-showmore" onClick={onToggle}>
+      {expanded ? 'Show less' : `Show ${hidden} more`}
+      <span className={`chevron ${expanded ? 'open' : ''}`}>›</span>
+    </button>
+  );
+}
+
 // ── Country panel content ─────────────────────────────────────────────────────
 
-function CountryContent({ country, onFlyTo, onOperatorClick }) {
-  const [opSort, setOpSort] = useState('mw');
+function CountryContent({ country, onFlyTo, onOperatorClick, density }) {
+  const cfg = cfgFor(density);
+  const [rankView, setRankView] = useState('campuses');   // 'campuses' | 'operators'
+  const [opSort, setOpSort]     = useState('mw');
+  const [expanded, setExpanded] = useState(false);
 
   const wattsPerCapita = getDCWattsPerCapita(country.countryCode);
   const fossilPct      = 100 - (country.carbon.renewables_pct ?? 0) - (country.carbon.nuclear_pct ?? 0);
@@ -121,46 +210,74 @@ function CountryContent({ country, onFlyTo, onOperatorClick }) {
   );
   const maxOpVal = opSort === 'mw' ? (topOperators[0]?.cap_mw ?? 1) : (topOperators[0]?.count ?? 1);
 
+  const lowCarbon = (country.carbon.renewables_pct ?? 0) + (country.carbon.nuclear_pct ?? 0);
+
+  // Active ranking list (campuses or operators), with optional top-N limit + expand
+  const activeList = rankView === 'campuses' ? topCampuses : topOperators;
+  const limit = cfg.topN;
+  const visible = (limit && !expanded) ? activeList.slice(0, limit) : activeList;
+  const hidden  = limit ? Math.max(0, activeList.length - limit) : 0;
+
   return (
     <div className="cm-body">
-      {/* 1. DC stats — campuses, footprint, power */}
+      {/* 1. DC stats */}
       <div className="panel-section">
         <SectionLabel>Data Centers · OSM</SectionLabel>
-        <div className="card-grid">
-          <div className="metric-card">
-            <BigNumber value={(osm?.campus_count ?? country.dcCount).toLocaleString()} unit="campuses" sub={osm ? `${osm.building_count} data rooms` : 'mapped in OSM'} />
-          </div>
-          <div className="metric-card">
-            <BigNumber value={footprintHa ?? '—'} unit={footprintHa ? 'ha' : ''} sub="total mapped footprint" />
-          </div>
-        </div>
-        {dcPower && (
-          <div className="country-power-row">
-            <div className="country-power-main">
-              <span className="country-power-val">{dcPower.twh} TWh/yr</span>
-              <span className="country-power-label">estimated DC electricity</span>
-            </div>
-            <div className="country-power-meta">
-              <span>{dcPower.pct_national}% of national grid</span>
-              {dcPower.url
-                ? <a href={dcPower.url} target="_blank" rel="noopener noreferrer" className={`data-badge data-badge-link ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source} ↗</a>
-                : <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source}</span>
-              }
-            </div>
-            {dcPower.confidence === 'low' && (
-              <p className="country-power-warning">Derived estimate only — actual 2024 consumption likely 20–40% higher due to AI infrastructure growth.</p>
-            )}
-            {wattsPerCapita != null && (
-              <div className="country-per-capita">
-                <span className="per-capita-val">{wattsPerCapita} W</span>
-                <span className="per-capita-label"> per person · avg draw attributed to data centres</span>
+        {cfg.statStrip ? (
+          <>
+            <StatStrip items={[
+              { value: (osm?.campus_count ?? country.dcCount).toLocaleString(), label: 'campuses' },
+              footprintHa ? { value: footprintHa, unit: 'ha', label: 'footprint' } : null,
+              dcPower ? { value: dcPower.twh, unit: 'TWh/yr', label: 'DC power' } : null,
+              wattsPerCapita != null ? { value: wattsPerCapita, unit: 'W', label: 'per capita' } : null,
+            ]} />
+            {dcPower && (
+              <div className="country-power-meta country-power-meta--strip">
+                <span>{dcPower.pct_national}% of national grid</span>
+                {dcPower.url
+                  ? <a href={dcPower.url} target="_blank" rel="noopener noreferrer" className={`data-badge data-badge-link ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source} ↗</a>
+                  : <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source}</span>}
               </div>
             )}
-          </div>
+          </>
+        ) : (
+          <>
+            <div className="card-grid">
+              <div className="metric-card">
+                <BigNumber value={(osm?.campus_count ?? country.dcCount).toLocaleString()} unit="campuses" sub={osm ? `${osm.building_count} data rooms` : 'mapped in OSM'} />
+              </div>
+              <div className="metric-card">
+                <BigNumber value={footprintHa ?? '—'} unit={footprintHa ? 'ha' : ''} sub="total mapped footprint" />
+              </div>
+            </div>
+            {dcPower && (
+              <div className="country-power-row">
+                <div className="country-power-main">
+                  <span className="country-power-val">{dcPower.twh} TWh/yr</span>
+                  <span className="country-power-label">estimated DC electricity</span>
+                </div>
+                <div className="country-power-meta">
+                  <span>{dcPower.pct_national}% of national grid</span>
+                  {dcPower.url
+                    ? <a href={dcPower.url} target="_blank" rel="noopener noreferrer" className={`data-badge data-badge-link ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source} ↗</a>
+                    : <span className={`data-badge ${dcPower.confidence === 'high' ? 'reported' : 'est'}`}>{dcPower.source}</span>}
+                </div>
+                {dcPower.confidence === 'low' && (
+                  <p className="country-power-warning">Derived estimate only — actual 2024 consumption likely 20–40% higher due to AI infrastructure growth.</p>
+                )}
+                {wattsPerCapita != null && (
+                  <div className="country-per-capita">
+                    <span className="per-capita-val">{wattsPerCapita} W</span>
+                    <span className="per-capita-label"> per person · avg draw attributed to data centres</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* 2. Grid — moved above campuses/operators */}
+      {/* 2. Grid */}
       <div className="panel-section">
         <SectionLabel>Grid · <a href="https://ember-climate.org/insights/research/global-electricity-review-2024/" target="_blank" rel="noopener noreferrer" className="source-link">Ember 2024</a> (2023 data)</SectionLabel>
         <div className="co2-card">
@@ -168,90 +285,67 @@ function CountryContent({ country, onFlyTo, onOperatorClick }) {
           <div className="clean-bar-wrap" style={{ marginTop: 10 }}>
             <div className="clean-bar-header">
               <span>Low-carbon share</span>
-              <span style={{ color: '#22c55e' }}>{(country.carbon.renewables_pct ?? 0) + (country.carbon.nuclear_pct ?? 0)}%</span>
+              <span style={{ color: '#22c55e' }}>{lowCarbon}%</span>
             </div>
-            <div className="clean-bar"><div className="clean-fill" style={{ width: `${(country.carbon.renewables_pct ?? 0) + (country.carbon.nuclear_pct ?? 0)}%` }} /></div>
+            <div className="clean-bar"><div className="clean-fill" style={{ width: `${lowCarbon}%` }} /></div>
           </div>
           <ElectricityMixBar renewablesPct={country.carbon.renewables_pct ?? 0} nuclearPct={country.carbon.nuclear_pct ?? 0} fossilPct={fossilPct} />
         </div>
       </div>
 
-      {/* 3. Largest campuses */}
-      {topCampuses.length > 0 && (
-        <div className="panel-section">
-          <SectionLabel><InfoTip id="campus">Largest campuses by est. capacity (OSM)</InfoTip></SectionLabel>
-          <div className="campus-ranking">
-            {topCampuses.map((c, i) => {
-              const canFly = c.lat && c.lon;
-              return (
-                <div key={c.id ?? i} className={`campus-rank-row ${canFly ? 'campus-rank-row--link' : ''}`}
-                  onClick={canFly ? () => onFlyTo?.({ lat: c.lat, lng: c.lon, zoom: 15 }) : undefined}
-                  title={canFly ? `Zoom to ${c.name}` : undefined}>
-                  <span className="rank-num">{i + 1}</span>
-                  <div className="rank-info">
-                    <div className="rank-name-row">
-                      <span className="rank-name">{c.name}</span>
-                      <span className={`rank-type ${TYPE_CLASS[c.type]}`}>{TYPE_LABEL[c.type]}</span>
-                    </div>
-                    <div className="rank-bar-row">
-                      <div className="rank-bar-track">
-                        <div className={`rank-bar-fill ${TYPE_CLASS[c.type]}`} style={{ width: `${Math.round((c.cap_mw ?? 0) / maxCap * 100)}%` }} />
-                      </div>
-                      <span className="rank-mw">{c.cap_mw != null ? `${c.cap_mw} MW` : `${(c.fp_m2 / 10000).toFixed(1)} ha`}</span>
-                    </div>
-                  </div>
-                  {canFly && <span className="rank-fly">↗</span>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 4. Operators */}
-      {topOperators.length > 0 && (
+      {/* 3. Merged rankings — campuses / operators behind one toggle */}
+      {(topCampuses.length > 0 || topOperators.length > 0) && (
         <div className="panel-section">
           <div className="section-label-row">
-            <SectionLabel>Operators</SectionLabel>
-            <div className="sort-toggle">
-              <button className={`sort-btn ${opSort === 'mw' ? 'active' : ''}`} onClick={() => setOpSort('mw')}>by MW</button>
-              <button className={`sort-btn ${opSort === 'count' ? 'active' : ''}`} onClick={() => setOpSort('count')}>by campuses</button>
+            <div className="rank-segmented">
+              <button className={`seg-btn ${rankView === 'campuses' ? 'active' : ''}`}
+                onClick={() => { setRankView('campuses'); setExpanded(false); }}>Campuses</button>
+              <button className={`seg-btn ${rankView === 'operators' ? 'active' : ''}`}
+                onClick={() => { setRankView('operators'); setExpanded(false); }}>Operators</button>
             </div>
-          </div>
-          <div className="campus-ranking">
-            {topOperators.map((op, i) => (
-              <div key={op.name} className="campus-rank-row campus-rank-row--link"
-                onClick={() => onOperatorClick?.(op.name)} title={`View ${op.name} operator page`}>
-                <span className="rank-num">{i + 1}</span>
-                <div className="rank-info">
-                  <div className="rank-name-row">
-                    <span className="rank-name">{op.name}</span>
-                    <span className={`rank-type ${TYPE_CLASS[op.type]}`}>{TYPE_LABEL[op.type]}</span>
-                  </div>
-                  <div className="rank-bar-row">
-                    <div className="rank-bar-track">
-                      <div className={`rank-bar-fill ${TYPE_CLASS[op.type]}`}
-                        style={{ width: `${Math.round((opSort === 'mw' ? (op.cap_mw ?? 0) : op.count) / maxOpVal * 100)}%` }} />
-                    </div>
-                    <span className="rank-mw">
-                      {opSort === 'mw'
-                        ? `${op.cap_mw ? `${op.cap_mw} MW · ` : ''}${op.count} campus${op.count !== 1 ? 'es' : ''}`
-                        : `${op.count} campus${op.count !== 1 ? 'es' : ''}${op.cap_mw ? ` · ${op.cap_mw} MW` : ''}`}
-                    </span>
-                  </div>
-                </div>
-                <span className="rank-fly">↗</span>
+            {rankView === 'operators' && (
+              <div className="sort-toggle">
+                <button className={`sort-btn ${opSort === 'mw' ? 'active' : ''}`} onClick={() => setOpSort('mw')}>by MW</button>
+                <button className={`sort-btn ${opSort === 'count' ? 'active' : ''}`} onClick={() => setOpSort('count')}>by campuses</button>
               </div>
-            ))}
+            )}
           </div>
+
+          <div className="campus-ranking">
+            {rankView === 'campuses'
+              ? visible.map((c, i) => {
+                  const canFly = c.lat && c.lon;
+                  return (
+                    <RankRow key={c.id ?? i} rank={i + 1} compact={cfg.compactRows}
+                      name={c.name} typeId={c.type} typeLabel={TYPE_LABEL[c.type]} typeClass={TYPE_CLASS[c.type]}
+                      barPct={Math.round((c.cap_mw ?? 0) / maxCap * 100)}
+                      value={c.cap_mw != null ? `${c.cap_mw} MW` : `${(c.fp_m2 / 10000).toFixed(1)} ha`}
+                      onClick={canFly ? () => onFlyTo?.({ lat: c.lat, lng: c.lon, zoom: 15 }) : undefined}
+                      fly={canFly} />
+                  );
+                })
+              : visible.map((op, i) => (
+                  <RankRow key={op.name} rank={i + 1} compact={cfg.compactRows}
+                    name={op.name} typeId={op.type} typeLabel={TYPE_LABEL[op.type]} typeClass={TYPE_CLASS[op.type]}
+                    barPct={Math.round((opSort === 'mw' ? (op.cap_mw ?? 0) : op.count) / maxOpVal * 100)}
+                    value={opSort === 'mw'
+                      ? `${op.cap_mw ? `${op.cap_mw} MW` : `${op.count} site${op.count !== 1 ? 's' : ''}`}`
+                      : `${op.count} site${op.count !== 1 ? 's' : ''}`}
+                    onClick={() => onOperatorClick?.(op.name)} fly />
+                ))}
+          </div>
+          <ShowMore hidden={hidden} expanded={expanded} onToggle={() => setExpanded(v => !v)} />
         </div>
       )}
 
-      {/* 5. Capacity pipeline */}
+      {/* 4. Market outlook — forward-looking, not derived from mapped campuses */}
       {pipeline && (
         <div className="panel-section">
-          <SectionLabel>Capacity Pipeline</SectionLabel>
-          <PipelineBar pipeline={pipeline} />
+          <SectionLabel>Market outlook</SectionLabel>
+          <p className="rank-caption" style={{ padding: '0 0 8px' }}>
+            Forward-looking market intelligence — independent of the OSM-mapped campuses above.
+          </p>
+          <PipelineBar pipeline={pipeline} compact={cfg.compactPipeline} />
         </div>
       )}
     </div>
@@ -260,30 +354,45 @@ function CountryContent({ country, onFlyTo, onOperatorClick }) {
 
 // ── Europe panel content ──────────────────────────────────────────────────────
 
-function EuropeContent({ europe, onSelectCountry, totalCampuses, countryDCStats }) {
+function EuropeContent({ europe, onSelectCountry, totalCampuses, countryDCStats, density }) {
+  const cfg = cfgFor(density);
   const [sort, setSort] = useState('twh');
+  const [expanded, setExpanded] = useState(false);
+
   const sorted = [...europe.countries].sort((a, b) =>
     sort === 'twh' ? b.twh - a.twh : b.pct_national - a.pct_national
   );
   const maxVal = sorted[0]?.[sort === 'twh' ? 'twh' : 'pct_national'] ?? 1;
 
-  // Aggregate type counts across all countries for the legend
   const totalByType = {};
   for (const t of TYPE_ORDER) {
     totalByType[t] = sorted.reduce((s, c) => s + (countryDCStats?.[c.code]?.type_counts?.[t] ?? 0), 0);
   }
   const grandTotal = Object.values(totalByType).reduce((s, n) => s + n, 0);
 
+  const limit   = cfg.countryTopN;
+  const visible = (limit && !expanded) ? sorted.slice(0, limit) : sorted;
+  const hidden  = limit ? Math.max(0, sorted.length - limit) : 0;
+
   return (
     <div className="cm-body">
       <div className="panel-section">
         <SectionLabel>Data Centers · Totals</SectionLabel>
-        <div className="card-grid">
-          <div className="metric-card"><BigNumber value={totalCampuses.toLocaleString()} unit="campuses" sub="mapped in OSM" /></div>
-          <div className="metric-card"><BigNumber value={europe.totalTwh} unit="TWh/yr" sub="est. DC electricity" /></div>
-          <div className="metric-card"><BigNumber value={europe.totalCO2Megatonnes} unit="Mt CO₂/yr" sub="est. emissions" /></div>
-          <div className="metric-card"><BigNumber value={europe.avgCarbonIntensity} unit="gCO₂/kWh" sub="weighted avg. grid intensity" /></div>
-        </div>
+        {cfg.statStrip ? (
+          <StatStrip items={[
+            { value: totalCampuses.toLocaleString(), label: 'campuses' },
+            { value: europe.totalTwh, unit: 'TWh/yr', label: 'DC power' },
+            { value: europe.totalCO2Megatonnes, unit: 'Mt', label: 'CO₂/yr' },
+            { value: europe.avgCarbonIntensity, unit: 'gCO₂', label: 'avg grid' },
+          ]} />
+        ) : (
+          <div className="card-grid">
+            <div className="metric-card"><BigNumber value={totalCampuses.toLocaleString()} unit="campuses" sub="mapped in OSM" /></div>
+            <div className="metric-card"><BigNumber value={europe.totalTwh} unit="TWh/yr" sub="est. DC electricity" /></div>
+            <div className="metric-card"><BigNumber value={europe.totalCO2Megatonnes} unit="Mt CO₂/yr" sub="est. emissions" /></div>
+            <div className="metric-card"><BigNumber value={europe.avgCarbonIntensity} unit="gCO₂/kWh" sub="weighted avg. grid intensity" /></div>
+          </div>
+        )}
         {grandTotal > 0 && (
           <div className="europe-type-legend">
             {TYPE_ORDER.filter(t => (totalByType[t] ?? 0) > 0).map(t => (
@@ -295,44 +404,55 @@ function EuropeContent({ europe, onSelectCountry, totalCampuses, countryDCStats 
             ))}
           </div>
         )}
-        <p className="member-note" style={{ marginTop: 8 }}>
-          Sums national estimates (JRC 2023 / EirGrid / NESO + derived). Actual 2024 consumption is likely 20–40% higher due to AI buildout.
-        </p>
+        {!cfg.statStrip && (
+          <p className="member-note" style={{ marginTop: 8 }}>
+            Sums national estimates (JRC 2023 / EirGrid / NESO + derived). Actual 2024 consumption is likely 20–40% higher due to AI buildout.
+          </p>
+        )}
       </div>
 
       <div className="panel-section">
         <div className="section-label-row">
           <SectionLabel>Countries by DC electricity</SectionLabel>
           <div className="sort-toggle">
-            <button className={`sort-btn ${sort === 'twh' ? 'active' : ''}`} onClick={() => setSort('twh')}>by TWh</button>
-            <button className={`sort-btn ${sort === 'pct' ? 'active' : ''}`} onClick={() => setSort('pct')}>by % grid</button>
+            <button className={`sort-btn ${sort === 'twh' ? 'active' : ''}`} onClick={() => { setSort('twh'); setExpanded(false); }}>by TWh</button>
+            <button className={`sort-btn ${sort === 'pct' ? 'active' : ''}`} onClick={() => { setSort('pct'); setExpanded(false); }}>by % grid</button>
           </div>
         </div>
         <div className="campus-ranking">
-          {sorted.map((c, i) => {
+          {visible.map((c, i) => {
             const widthPct = Math.round((sort === 'twh' ? c.twh : c.pct_national) / maxVal * 100);
             const tc = countryDCStats?.[c.code]?.type_counts ?? {};
+            const value = `${c.twh} TWh · ${c.pct_national}%${c.wattsPerCapita != null ? ` · ${c.wattsPerCapita} W/cap` : ''}`;
             return (
-              <div key={c.code} className="campus-rank-row campus-rank-row--link"
+              <div key={c.code}
+                className={`${cfg.compactRows ? 'rank-row-compact' : 'campus-rank-row'} rank-row--link`}
                 onClick={() => onSelectCountry?.(c.code)} title={`View ${c.name}`}>
                 <span className="rank-num">{i + 1}</span>
-                <div className="rank-info">
-                  <div className="rank-name-row">
+                {cfg.compactRows ? (
+                  <>
                     <span className="rank-name">{c.name}</span>
-                  </div>
-                  <div className="rank-bar-row">
                     <TypeStackBar typeCounts={tc} widthPct={widthPct} />
-                    <span className="rank-mw">
-                      {c.twh} TWh · {c.pct_national}%
-                      {c.wattsPerCapita != null ? ` · ${c.wattsPerCapita} W/cap` : ''}
-                    </span>
-                  </div>
-                </div>
-                <span className="rank-fly">↗</span>
+                    <span className="rank-val">{c.twh} TWh</span>
+                    <span className="rank-fly">↗</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="rank-info">
+                      <div className="rank-name-row"><span className="rank-name">{c.name}</span></div>
+                      <div className="rank-bar-row">
+                        <TypeStackBar typeCounts={tc} widthPct={widthPct} />
+                        <span className="rank-mw">{value}</span>
+                      </div>
+                    </div>
+                    <span className="rank-fly">↗</span>
+                  </>
+                )}
               </div>
             );
           })}
         </div>
+        <ShowMore hidden={hidden} expanded={expanded} onToggle={() => setExpanded(v => !v)} />
       </div>
     </div>
   );
@@ -340,7 +460,7 @@ function EuropeContent({ europe, onSelectCountry, totalCampuses, countryDCStats 
 
 // ── Main modal ────────────────────────────────────────────────────────────────
 
-export function CountryModal({ country, europe, onClose, onFlyTo, onSelectCountry, totalCampuses, countryDCStats }) {
+export function CountryModal({ country, europe, onClose, onFlyTo, onSelectCountry, totalCampuses, countryDCStats, density = 'full' }) {
   const [operatorName, setOperatorName] = useState(null);
 
   useEffect(() => { setOperatorName(null); }, [country?.countryCode]);
@@ -381,12 +501,14 @@ export function CountryModal({ country, europe, onClose, onFlyTo, onSelectCountr
         ) : isCountry ? (
           <CountryContent
             country={country}
+            density={density}
             onFlyTo={(coords) => { onClose(); setTimeout(() => onFlyTo?.(coords), 50); }}
             onOperatorClick={setOperatorName}
           />
         ) : (
           <EuropeContent
             europe={europe}
+            density={density}
             onSelectCountry={(code) => { onClose(); setTimeout(() => onSelectCountry?.(code), 50); }}
             totalCampuses={totalCampuses ?? 0}
             countryDCStats={countryDCStats}

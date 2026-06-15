@@ -60,14 +60,22 @@ Clicking a country shows a summary of its data centre sector:
 - Campus and building counts from OSM, total mapped footprint
 - National DC electricity consumption with clickable source links and per-capita draw
 - Grid carbon intensity and electricity mix from Ember Climate 2024 (2023 data)
-- Largest campuses and operator ranking (sortable by estimated MW or campus count)
-- Capacity pipeline: operational, under construction, and planned MW
+- Largest campuses and operators, merged behind one toggle and sortable by estimated MW or campus count
+- **Market outlook** — forward-looking under-construction and planned capacity (CBRE/DCD), framed as distinct from the OSM-mapped present rather than summed with it
 
 The **Europe** button opens a continent-wide rollup: total campuses, TWh, Mt CO₂, weighted grid intensity, and a country ranking with operator-type breakdown.
 
 ### Operator panel
 
 Clicking any operator in the country ranking opens a dedicated panel showing global stats, per-country campus listings with fly-to links, and a coverage note for hyperscalers.
+
+### Panel density & settings
+
+A settings dialog (cog icon in the header) lets users choose how tightly the country and Europe panels pack information — **Compact** (single-line rows, merged rankings, top-5 with show-more, condensed stat strip), **Moderate**, or **Comfortable** (spacious rows). The choice is persisted to `localStorage`.
+
+### Inline definitions
+
+Operator-type chips (Hyperscaler, Colo, Carrier, Enterprise…) and key metrics carry on-demand definitions: hover the term to preview, click to pin it open. Longer explanations and sourced figures use an explicit "?" affordance instead. Definitions live in a central glossary so the UI stays uncluttered while help is always one hover away.
 
 ### Educational explainer ("Learn More")
 

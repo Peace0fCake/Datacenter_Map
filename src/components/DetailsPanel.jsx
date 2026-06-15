@@ -1,8 +1,11 @@
 import { useState, useCallback, useRef } from 'react';
 import { waterStressLabel, getCarbonData } from '../lib/model';
-import { InfoTip } from './InfoTip';
+import { InfoTip, HoverDef } from './InfoTip';
 import { SuggestPanel } from './SuggestPanel';
 import { useSuggestions } from '../hooks/useSuggestions';
+
+const TYPE_LABEL = { hyperscaler: 'Hyperscaler', cloud: 'Cloud', colocation: 'Colo', carrier: 'Carrier', enterprise: 'Enterprise' };
+const TYPE_CLASS = { hyperscaler: 'type-hyper', cloud: 'type-cloud', colocation: 'type-colo', carrier: 'type-carrier', enterprise: 'type-enterprise' };
 
 // Logarithmic slider: internal range 0–100 maps to 1–5,000 MW.
 // Covers edge DCs up to the largest planned mega-campus (~5 GW, Stargate-scale).
@@ -226,6 +229,13 @@ export function DetailsPanel({ dc, onClose, simCapacityMW, onCapacityChange, onF
                 ? <span className="tag tag-site">Campus · {dc.buildingCount} buildings</span>
                 : !isSimulation && dc.source !== 'fallback' && <span className="tag tag-dc">Data Center</span>
               }
+              {!isSimulation && (dc.dcType || m?.dcType) && (
+                <HoverDef id={dc.dcType || m.dcType}>
+                  <span className={`tag dc-type-tag ${TYPE_CLASS[dc.dcType || m.dcType]}`}>
+                    {TYPE_LABEL[dc.dcType || m.dcType]}
+                  </span>
+                </HoverDef>
+              )}
               {topSuggestion?.facility_type && topSuggestion.facility_type !== 'unknown' && (
                 <span className="tag tag-community-facility" title="Community-reported facility type">
                   {topSuggestion.facility_type}

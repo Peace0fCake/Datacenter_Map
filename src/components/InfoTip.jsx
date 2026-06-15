@@ -31,6 +31,14 @@ export const GLOSSARY = {
     term: 'Colocation (Colo)',
     body: 'A data center where multiple tenants rent space, power, and connectivity. The operator (Equinix, Digital Realty, NTT…) owns the building and infrastructure; the tenant brings their own servers. Colos sit at the centre of internet exchange points and are critical for interconnection.',
   },
+  carrier: {
+    term: 'Carrier / Telco data center',
+    body: 'A facility operated by a telecommunications carrier — Deutsche Telekom, Orange, Telefónica, Telia, BT. Originally built to house network and switching equipment, many now also offer colocation. They sit at network junctions and tend to run higher PUEs than purpose-built modern colos.',
+  },
+  enterprise: {
+    term: 'Enterprise data center',
+    body: 'A private facility built and run by a single organisation for its own workloads — a bank, hospital, government body, or manufacturer. Often older, smaller, and less efficient (PUE 1.7–2.5+). Many enterprises are migrating to cloud, but regulated sectors keep on-premises infrastructure for compliance.',
+  },
   campus: {
     term: 'Campus',
     body: 'A group of data center buildings operated as a single logical site — typically by one operator on one land parcel. Campuses allow operators to scale incrementally: they add buildings as demand grows rather than constructing one massive structure.',
@@ -123,6 +131,78 @@ export function InfoTip({ id, children }) {
         aria-label={`Definition: ${def.term}`}
         tabIndex={0}
       >?</button>
+      {popover}
+    </span>
+  );
+}
+
+/**
+ * HoverDef — the wrapped element IS the trigger (no "?" button).
+ * Hover to preview the definition; click to pin it open until dismissed.
+ * Use for short inline definitions on tags/terms (e.g. operator-type chips).
+ */
+export function HoverDef({ id, children, className = '' }) {
+  const [pos, setPos]   = useState(null);
+  const [pinned, setPinned] = useState(false);
+  const ref             = useRef(null);
+  const timerRef        = useRef(null);
+
+  const def = GLOSSARY[id];
+
+  const calcPos = useCallback(() => {
+    if (!ref.current) return null;
+    const rect  = ref.current.getBoundingClientRect();
+    const above = rect.bottom > window.innerHeight * 0.6;
+    const left  = Math.min(Math.max(rect.left, 6), window.innerWidth - POPOVER_WIDTH - 6);
+    return { left, top: above ? rect.top - 8 : rect.bottom + 8, above };
+  }, []);
+
+  const show = useCallback(() => { clearTimeout(timerRef.current); setPos(calcPos()); }, [calcPos]);
+  const hide = useCallback(() => {
+    if (pinned) return;
+    timerRef.current = setTimeout(() => setPos(null), 120);
+  }, [pinned]);
+
+  // Close pinned popover on outside click
+  useEffect(() => {
+    if (!pinned) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) { setPinned(false); setPos(null); }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [pinned]);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  if (!def) return children ?? null;
+
+  const popover = pos && createPortal(
+    <div
+      className={`infotip-popover ${pos.above ? 'above' : 'below'}`}
+      style={{ position: 'fixed', top: pos.above ? undefined : pos.top, bottom: pos.above ? window.innerHeight - pos.top : undefined, left: pos.left }}
+      onMouseEnter={() => clearTimeout(timerRef.current)}
+      onMouseLeave={hide}
+      role="tooltip"
+    >
+      <div className="infotip-term">{def.term}</div>
+      <div className="infotip-body">{def.body}</div>
+    </div>,
+    document.body,
+  );
+
+  return (
+    <span
+      ref={ref}
+      className={`hoverdef ${pinned ? 'pinned' : ''} ${className}`}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onClick={(e) => { e.stopPropagation(); setPinned(p => { const np = !p; setPos(np ? calcPos() : null); return np; }); }}
+      onFocus={show}
+      onBlur={hide}
+      tabIndex={0}
+    >
+      {children}
       {popover}
     </span>
   );

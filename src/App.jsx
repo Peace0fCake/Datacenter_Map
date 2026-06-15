@@ -5,6 +5,7 @@ import { CountryModal } from './components/CountryModal';
 import { SimulationControls } from './components/SimulationControls';
 import { Legend } from './components/Legend';
 import { LearnMore } from './components/LearnMore';
+import { SettingsPanel } from './components/SettingsPanel';
 import { useClimateData } from './hooks/useClimateData';
 import { useWaterStress } from './hooks/useWaterStress';
 import { useCampusPower } from './hooks/useCampusPower';
@@ -18,6 +19,9 @@ export default function App() {
   const [theme, setTheme]           = useState('dark');
   const [learnOpen, setLearnOpen]       = useState(false);
   const [learnTab, setLearnTab]         = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [panelDensity, setPanelDensity] = useState(() => localStorage.getItem('panelDensity') || 'full');
+  useEffect(() => { localStorage.setItem('panelDensity', panelDensity); }, [panelDensity]);
   const [selectedEurope, setSelectedEurope] = useState(false);
   const [activeLayer, setActiveLayer] = useState('none');
   const [showHeatmap, setShowHeatmap] = useState(false);
@@ -267,6 +271,17 @@ export default function App() {
             Learn More
           </button>
           <button
+            className="icon-btn"
+            onClick={() => setSettingsOpen(true)}
+            title="Settings"
+            aria-label="Settings"
+          >
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <button
             className="theme-toggle"
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
             title="Toggle light/dark mode"
@@ -388,9 +403,17 @@ export default function App() {
           onSelectCountry={handleSelectCountry}
           totalCampuses={totalCampuses}
           countryDCStats={countryDCStats}
+          density={panelDensity}
         />
       )}
       {learnOpen && <LearnMore onClose={() => setLearnOpen(false)} initialTab={learnTab} campusStats={campusStats} />}
+      {settingsOpen && (
+        <SettingsPanel
+          density={panelDensity}
+          onDensity={setPanelDensity}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   );
 }
