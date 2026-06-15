@@ -1,6 +1,56 @@
 import carbonData    from '../data/carbonIntensity.json';
 import dcPowerData  from '../data/dcPowerByCountry.json';
 
+// ── Country populations (2024 estimates) ────────────────────────────────────
+const COUNTRY_POPULATION = {
+  AT: 9_100_000,  BE: 11_600_000, BG:  6_500_000, CH:  8_700_000,
+  CY: 1_200_000,  CZ: 10_900_000, DE: 84_000_000, DK:  5_900_000,
+  EE: 1_400_000,  ES: 47_000_000, FI:  5_600_000, FR: 68_000_000,
+  GB: 67_000_000, GR: 10_700_000, HR:  3_900_000, HU:  9_700_000,
+  IE: 5_100_000,  IS:    380_000, IT: 60_000_000, LT:  2_800_000,
+  LU:   660_000,  LV:  1_800_000, NL: 17_800_000, NO:  5_500_000,
+  PL: 38_000_000, PT: 10_300_000, RO: 19_000_000, RS:  6_800_000,
+  SE: 10_500_000, SI:  2_100_000, SK:  5_500_000, TR: 85_000_000,
+  UA: 44_000_000,
+};
+
+export function getCountryPopulation(code) {
+  return COUNTRY_POPULATION[code] ?? null;
+}
+
+// Average watts attributed to data centres per person (TWh → W per capita)
+export function getDCWattsPerCapita(code) {
+  const power = dcPowerData[code];
+  const pop   = COUNTRY_POPULATION[code];
+  if (!power || !pop) return null;
+  return Math.round(power.twh * 1e12 / 8760 / pop);
+}
+
+// Aggregate stats across all countries in dcPowerByCountry
+export function getEuropeStats() {
+  let totalTwh = 0;
+  let weightedIntensityNum = 0;
+  const countries = [];
+
+  for (const [code, power] of Object.entries(dcPowerData)) {
+    if (code.startsWith('_')) continue;
+    const carbon = getCarbonData(code);
+    const co2Megatonnes = +(power.twh * carbon.intensity_gco2_kwh * 1e3 / 1e6).toFixed(2);
+    const pop = COUNTRY_POPULATION[code] ?? null;
+    const wattsPerCapita = pop ? Math.round(power.twh * 1e12 / 8760 / pop) : null;
+    totalTwh += power.twh;
+    weightedIntensityNum += power.twh * carbon.intensity_gco2_kwh;
+    countries.push({ code, name: carbon.name ?? code, twh: power.twh, pct_national: power.pct_national, co2Megatonnes, wattsPerCapita, carbonIntensity: carbon.intensity_gco2_kwh, confidence: power.confidence });
+  }
+
+  return {
+    totalTwh: +totalTwh.toFixed(1),
+    totalCO2Megatonnes: +(countries.reduce((s, c) => s + c.co2Megatonnes, 0)).toFixed(1),
+    avgCarbonIntensity: Math.round(weightedIntensityNum / totalTwh),
+    countries: [...countries].sort((a, b) => b.twh - a.twh),
+  };
+}
+
 // ── Operator calibration ─────────────────────────────────────────────────────
 // Real PUE and WUE from publicly available CSR / sustainability reports.
 // These override the temperature-based model when an operator is matched.
@@ -57,15 +107,66 @@ export function utilizationFromMW(mw) {
   return 0.65;
 }
 
-// ── PUE / WUE model (used when no reported value is available) ───────────────
-export function estimatePUE(avgTempC) {
-  const pue = 1.35 + 0.01 * avgTempC;
-  return Math.min(Math.max(pue, 1.2), 2.0);
+// ── DC type inference from operator name ─────────────────────────────────────
+const TYPE_KEYWORDS = {
+  hyperscaler: ['microsoft', 'azure', 'google', 'amazon', 'aws', 'meta ', 'facebook', 'apple ', 'alibaba', 'baidu', 'tencent'],
+  cloud:       ['ovh', 'hetzner', 'scaleway', 'ionos', 'linode', 'vultr', 'leaseweb', 'contabo', 'fastly', 'cloudflare', 'serverius', 'previder', 'hosteurope'],
+  colocation:  ['equinix', 'digital realty', 'interxion', 'ntt ', 'cyrusone', 'iron mountain', 'global switch', 'globalswitch', 'vantage', 'data4', 'colt ', 'stack infra', 'ase', 'nldc', 'nabiax', 'ascenty'],
+  carrier:     ['telekom', 'telecom', 'telia', 'swisscom', 'bt data', 'orange', 'vodafone', 'telefonica', 'kddi', 'tele2', 'proximus', 'kcell', 'teliasonera'],
+};
+
+export function inferDCType(operatorName) {
+  if (!operatorName) return null;
+  const lower = operatorName.toLowerCase();
+  for (const [type, keywords] of Object.entries(TYPE_KEYWORDS)) {
+    if (keywords.some(k => lower.includes(k))) return type;
+  }
+  return null;
 }
 
-export function estimateWUE(avgTempC) {
-  const wue = 1.2 + 0.04 * Math.max(0, avgTempC - 10);
-  return Math.min(wue, 3.0);
+// ── PUE / WUE model (used when no reported value is available) ───────────────
+// Research basis:
+//   Type adjustment: hyperscale facilities target PUE 1.1-1.2 (IEA/Uptime Institute);
+//   enterprise DCs average PUE 1.7-2.0 (Uptime Institute Global Survey 2024).
+//   Area adjustment: larger footprint → better cooling economy of scale (~0.05 per decade of m²).
+//   Ref: ASHRAE TC 9.9, JRC 2023, Uptime Institute Global DC Survey 2024.
+const DC_TYPE_PUE_DELTA = {
+  hyperscaler: -0.22,
+  cloud:       -0.08,
+  colocation:  +0.02,
+  carrier:     +0.14,
+  enterprise:  +0.30,
+};
+const DC_TYPE_WUE_DELTA = {
+  hyperscaler: -0.45,
+  cloud:       -0.15,
+  colocation:  +0.00,
+  carrier:     +0.20,
+  enterprise:  +0.55,
+};
+
+function footprintPUEDelta(footprintM2) {
+  if (!footprintM2 || footprintM2 <= 0) return 0;
+  // Neutral at 10,000 m²; ±0.05 per order of magnitude
+  return -0.05 * (Math.log10(footprintM2) - 4);
+}
+function footprintWUEDelta(footprintM2) {
+  if (!footprintM2 || footprintM2 <= 0) return 0;
+  return -0.08 * (Math.log10(footprintM2) - 4);
+}
+
+export function estimatePUE(avgTempC, dcType = null, footprintM2 = null) {
+  const base = 1.40 + 0.012 * avgTempC;
+  const typeDelta = DC_TYPE_PUE_DELTA[dcType] ?? 0;
+  const sizeDelta = footprintPUEDelta(footprintM2);
+  return +Math.min(Math.max(base + typeDelta + sizeDelta, 1.05), 2.2).toFixed(3);
+}
+
+export function estimateWUE(avgTempC, dcType = null, footprintM2 = null) {
+  const base = 1.2 + 0.04 * Math.max(0, avgTempC - 10);
+  const typeDelta = DC_TYPE_WUE_DELTA[dcType] ?? 0;
+  const sizeDelta = footprintWUEDelta(footprintM2);
+  return +Math.min(Math.max(base + typeDelta + sizeDelta, 0.1), 3.5).toFixed(2);
 }
 
 // ── Country fallback (only used when Nominatim fails AND no OSM tag) ─────────
@@ -154,9 +255,9 @@ export function allocateDCPower(footprintM2, countryCode, countryStats) {
  * @param {number|null} params.reportedPUE  from CSR report; overrides model
  * @param {number|null} params.reportedWUE  from CSR report; overrides model
  */
-export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryCode, reportedPUE = null, reportedWUE = null, totalEnergyMWhOverride = null }) {
-  const pue = reportedPUE ?? estimatePUE(avgTempC);
-  const wue = reportedWUE ?? estimateWUE(avgTempC);
+export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryCode, reportedPUE = null, reportedWUE = null, totalEnergyMWhOverride = null, dcType = null, footprintM2 = null }) {
+  const pue = reportedPUE ?? estimatePUE(avgTempC, dcType, footprintM2);
+  const wue = reportedWUE ?? estimateWUE(avgTempC, dcType, footprintM2);
 
   // If we have a country-level allocation, use it as total energy directly.
   // Otherwise estimate from capacity × utilization × hours.
@@ -177,7 +278,7 @@ export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryC
   const euHouseholds     = Math.round(totalEnergyKWh / 3500);
 
   return {
-    capacityMW, utilizationRate, avgTempC,
+    capacityMW, utilizationRate, avgTempC, dcType,
     pue:  +pue.toFixed(3),
     wue:  +wue.toFixed(2),
     pueReported: reportedPUE !== null,

@@ -1,15 +1,15 @@
 {
   "_note": "All figures approximate. European scope = EU27 + UK + NO + CH unless noted. See source fields.",
   "history": {
-    "source": "JRC 2021 (2018–2020), IEA Electricity 2024 (2021–2024)",
-    "years":  [2018, 2019, 2020, 2021, 2022, 2023, 2024],
-    "twh":    [76.8, 78.5, 77.5, 83.0, 89.0, 100.0, 112.0]
+    "source": "JRC 2021 (2018–2020), IEA Electricity 2024 (2021–2023), IEA Electricity 2025 (2024–2025 preliminary)",
+    "years":  [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "twh":    [76.8, 78.5, 77.5, 83.0, 89.0, 100.0, 134.0, 158.0]
   },
   "scenarios": {
-    "note": "Projections from 2024 baseline (112 TWh). Shaded bands show range of published estimates per pathway.",
-    "base_year": 2024,
-    "base_twh": 112,
-    "years": [2024, 2025, 2026, 2027, 2028, 2029, 2030],
+    "note": "Projections from 2025 preliminary baseline (158 TWh). Shaded bands show range of published estimates per pathway.",
+    "base_year": 2025,
+    "base_twh": 158,
+    "years": [2025, 2026, 2027, 2028, 2029, 2030],
     "variants": [
       {
         "id": "efficiency",
@@ -17,19 +17,19 @@
         "sublabel": "Strong policy + PUE gains offset AI demand",
         "source": "IEA Net Zero 2050 analogue, ~4 % CAGR",
         "color": "#22c55e",
-        "twh":   [112, 116, 121, 126, 131, 136, 142],
-        "low":   [112, 113, 116, 119, 122, 125, 128],
-        "high":  [112, 120, 128, 136, 144, 152, 161]
+        "twh":   [158, 164, 171, 178, 185, 192],
+        "low":   [158, 160, 164, 168, 172, 177],
+        "high":  [158, 170, 182, 194, 207, 221]
       },
       {
         "id": "baseline",
         "label": "Current trends",
         "sublabel": "Gradual AI growth, moderate efficiency gains",
-        "source": "IEA Electricity 2024 central scenario, ~9 % CAGR",
+        "source": "IEA Electricity 2025 central scenario, ~9 % CAGR",
         "color": "#eab308",
-        "twh":   [112, 122, 133, 145, 158, 172, 188],
-        "low":   [112, 118, 127, 137, 148, 160, 173],
-        "high":  [112, 127, 143, 161, 181, 204, 229]
+        "twh":   [158, 172, 188, 205, 223, 243],
+        "low":   [158, 165, 178, 192, 208, 224],
+        "high":  [158, 180, 203, 229, 258, 291]
       },
       {
         "id": "ai_acceleration",
@@ -37,9 +37,9 @@
         "sublabel": "Sustained large-model training + inference build-out",
         "source": "Goldman Sachs AI Power Surge 2024, ~17 % CAGR",
         "color": "#f97316",
-        "twh":   [112, 131, 153, 179, 210, 246, 288],
-        "low":   [112, 126, 145, 166, 191, 220, 253],
-        "high":  [112, 138, 167, 202, 245, 297, 360]
+        "twh":   [158, 185, 216, 253, 296, 346],
+        "low":   [158, 177, 204, 235, 271, 312],
+        "high":  [158, 196, 235, 282, 338, 406]
       },
       {
         "id": "unconstrained",
@@ -47,38 +47,38 @@
         "sublabel": "No grid constraints, exponential AI capex",
         "source": "Rystad Energy high scenario 2024, ~25 % CAGR",
         "color": "#ef4444",
-        "twh":   [112, 140, 175, 219, 273, 342, 427],
-        "low":   [112, 134, 165, 203, 249, 306, 376],
-        "high":  [112, 148, 190, 244, 313, 401, 515]
+        "twh":   [158, 198, 247, 309, 386, 483],
+        "low":   [158, 188, 230, 281, 343, 419],
+        "high":  [158, 210, 270, 347, 447, 575]
       }
     ]
   },
   "source_comparison": {
-    "metric": "European DC electricity consumption, 2023 estimate (TWh/yr)",
-    "note": "Variation reflects different country scopes, facility types, and bottom-up vs top-down methodologies.",
+    "metric": "European DC electricity consumption, 2024 estimate (TWh/yr)",
+    "note": "Variation reflects different country scopes, facility types, and bottom-up vs top-down methodologies. All estimates revised upward from 2023 due to faster-than-expected AI infrastructure deployment.",
     "estimates": [
-      { "source": "JRC 2023",              "twh": 92,  "low": 84,  "high": 104, "scope": "EU27+UK+NO+CH, bottom-up" },
-      { "source": "IRENA 2023",            "twh": 95,  "low": 86,  "high": 108, "scope": "EU27+UK, based on IEA" },
-      { "source": "IEA Electricity 2024",  "twh": 100, "low": 90,  "high": 115, "scope": "EU27+UK+NO+CH+IS" },
-      { "source": "EPRI 2024",             "twh": 105, "low": 94,  "high": 120, "scope": "EU estimate derived from US study" },
-      { "source": "Goldman Sachs 2024",    "twh": 108, "low": 96,  "high": 126, "scope": "EU27+UK, includes AI servers" },
-      { "source": "Rystad Energy 2024",    "twh": 120, "low": 104, "high": 142, "scope": "EU27+UK+NO, includes edge" }
+      { "source": "JRC 2024",              "twh": 118, "low": 106, "high": 134, "scope": "EU27+UK+NO+CH, bottom-up" },
+      { "source": "IEA Electricity 2025",  "twh": 130, "low": 115, "high": 148, "scope": "EU27+UK+NO+CH+IS" },
+      { "source": "IRENA 2024",            "twh": 125, "low": 110, "high": 143, "scope": "EU27+UK, based on IEA" },
+      { "source": "EPRI 2024",             "twh": 132, "low": 115, "high": 153, "scope": "EU estimate derived from US study" },
+      { "source": "Goldman Sachs 2025",    "twh": 145, "low": 128, "high": 168, "scope": "EU27+UK, includes AI servers" },
+      { "source": "Rystad Energy 2025",    "twh": 160, "low": 138, "high": 188, "scope": "EU27+UK+NO, includes edge" }
     ]
   },
   "pipeline": {
-    "source": "CBRE European Data Center H1 2024, Data Center Dynamics 2024, Cushman & Wakefield 2024",
-    "note": "MW = megawatts of IT load. 'Planned' = announced but not yet permitted/under construction. Figures are estimates.",
+    "source": "CBRE European Data Center H2 2024, Data Center Dynamics Pipeline Tracker Q1 2025, Cushman & Wakefield 2025",
+    "note": "MW = megawatts of IT load. 'Planned' = announced but not yet permitted/under construction. Figures are estimates and have grown substantially since H1 2024 due to hyperscaler AI commitments.",
     "countries": [
-      { "code": "GB", "name": "United Kingdom", "current_mw": 1400, "construction_mw": 1200, "planned_mw": 2000 },
-      { "code": "NL", "name": "Netherlands",    "current_mw": 900,  "construction_mw": 800,  "planned_mw": 1500 },
-      { "code": "DE", "name": "Germany",        "current_mw": 800,  "construction_mw": 600,  "planned_mw": 1200 },
-      { "code": "IE", "name": "Ireland",        "current_mw": 1100, "construction_mw": 600,  "planned_mw": 900  },
-      { "code": "FR", "name": "France",         "current_mw": 500,  "construction_mw": 400,  "planned_mw": 600  },
-      { "code": "ES", "name": "Spain",          "current_mw": 400,  "construction_mw": 500,  "planned_mw": 600  },
-      { "code": "SE", "name": "Sweden",         "current_mw": 200,  "construction_mw": 300,  "planned_mw": 500  },
-      { "code": "PL", "name": "Poland",         "current_mw": 200,  "construction_mw": 150,  "planned_mw": 300  },
-      { "code": "DK", "name": "Denmark",        "current_mw": 150,  "construction_mw": 200,  "planned_mw": 300  },
-      { "code": "FI", "name": "Finland",        "current_mw": 150,  "construction_mw": 100,  "planned_mw": 200  }
+      { "code": "GB", "name": "United Kingdom", "current_mw": 1800, "construction_mw": 1600, "planned_mw": 2800 },
+      { "code": "DE", "name": "Germany",        "current_mw": 950,  "construction_mw": 800,  "planned_mw": 1900 },
+      { "code": "NL", "name": "Netherlands",    "current_mw": 1000, "construction_mw": 800,  "planned_mw": 1400 },
+      { "code": "IE", "name": "Ireland",        "current_mw": 1200, "construction_mw": 400,  "planned_mw": 500  },
+      { "code": "ES", "name": "Spain",          "current_mw": 550,  "construction_mw": 950,  "planned_mw": 2500 },
+      { "code": "FR", "name": "France",         "current_mw": 650,  "construction_mw": 700,  "planned_mw": 1400 },
+      { "code": "SE", "name": "Sweden",         "current_mw": 280,  "construction_mw": 450,  "planned_mw": 800  },
+      { "code": "PL", "name": "Poland",         "current_mw": 280,  "construction_mw": 280,  "planned_mw": 650  },
+      { "code": "DK", "name": "Denmark",        "current_mw": 200,  "construction_mw": 280,  "planned_mw": 400  },
+      { "code": "FI", "name": "Finland",        "current_mw": 200,  "construction_mw": 150,  "planned_mw": 300  }
     ]
   }
 }

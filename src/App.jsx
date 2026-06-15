@@ -1,12 +1,14 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MapView } from './components/MapView';
 import { DetailsPanel } from './components/DetailsPanel';
+import { CountryModal } from './components/CountryModal';
 import { SimulationControls } from './components/SimulationControls';
 import { Legend } from './components/Legend';
-import { CapacityOutlook } from './components/CapacityOutlook';
+import { LearnMore } from './components/LearnMore';
 import { useClimateData } from './hooks/useClimateData';
 import { useWaterStress } from './hooks/useWaterStress';
-import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, getCarbonData, allocateDCPower, getCountryDCPower } from './lib/model';
+import { useCampusPower } from './hooks/useCampusPower';
+import { computeMetrics, utilizationFromMW, getCountryFromCoords, getOperatorCalibration, getCarbonData, allocateDCPower, getCountryDCPower, getEuropeStats, inferDCType } from './lib/model';
 import { reverseGeocodeCountry } from './hooks/useReverseGeocode';
 import './App.css';
 
@@ -14,8 +16,15 @@ let simCounter = 0;
 
 export default function App() {
   const [theme, setTheme]           = useState('dark');
-  const [outlookOpen, setOutlookOpen] = useState(false);
+  const [learnOpen, setLearnOpen]       = useState(false);
+  const [learnTab, setLearnTab]         = useState(0);
+  const [selectedEurope, setSelectedEurope] = useState(false);
   const [activeLayer, setActiveLayer] = useState('none');
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showIris,    setShowIris]    = useState(false);
+  const [showDots,    setShowDots]    = useState(true);
+  const [layerOpacity, setLayerOpacity] = useState({ carbon: 0.55, water: 0.65, heatmap: 0.75, iris: 0.75 });
+  const setOpacity = (key, val) => setLayerOpacity(prev => ({ ...prev, [key]: val }));
   const [countryDCStats, setCountryDCStats] = useState({});
   const [pipelineByCountry, setPipelineByCountry] = useState({});
 
@@ -37,6 +46,7 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  const { metrics: precomputedMetrics, stats: campusStats } = useCampusPower();
   const { getAvgTemp }    = useClimateData();
   const { getWaterStress } = useWaterStress();
 
@@ -80,27 +90,41 @@ export default function App() {
     if (enrichingRef.current.has(dc.id)) return;
     enrichingRef.current.add(dc.id);
 
+    // Use pre-computed metrics when available (avoids async re-computation per click)
+    const precomp = precomputedMetrics?.[dc.id] ?? null;
+
     const countryCode =
       (dc.country && dc.country.length === 2 ? dc.country.toUpperCase() : null) ??
+      precomp?.country ??
       (await reverseGeocodeCountry(dc.lat, dc.lng)) ??
       getCountryFromCoords(dc.lat, dc.lng);
 
     const [avgTempC, waterStress] = await Promise.all([
-      getAvgTemp(dc.lat, dc.lng),
+      precomp ? Promise.resolve(precomp.avg_temp_c) : getAvgTemp(dc.lat, dc.lng),
       getWaterStress(dc.lat, dc.lng),
     ]);
 
-    const calibration   = getOperatorCalibration(dc.operator);
-    const allocatedMWh  = allocateDCPower(dc.footprintM2 ?? null, countryCode, countryDCStats[countryCode] ?? null);
+    const calibration  = getOperatorCalibration(dc.operator);
+    const dcType       = precomp?.dc_type ?? dc.dcType ?? inferDCType(dc.operator);
+    const reportedPUE  = precomp?.pue_reported ? precomp.pue : (calibration?.pue ?? null);
 
-    const metrics = (dc.capacityMW != null || allocatedMWh != null) ? computeMetrics({
-      capacityMW:             dc.capacityMW ?? 1,
-      utilizationRate:        utilizationFromMW(dc.capacityMW ?? 1),
+    // Energy: pre-computed national-share allocation (primary) → footprint allocation fallback.
+    // NOTE: estimated_capacity_mw is itself footprint-derived (~300 W/m²), so it is NOT treated
+    // as an authoritative capacity. Allocation ties each campus to measured national statistics.
+    const allocatedMWh = precomp?.total_mwh_yr
+      ?? allocateDCPower(dc.footprintM2 ?? null, countryCode, countryDCStats[countryCode] ?? null);
+    const fallbackMW = dc.capacityMW ?? precomp?.power_mw ?? 1;
+
+    const metrics = (allocatedMWh != null || dc.capacityMW != null) ? computeMetrics({
+      capacityMW:             fallbackMW,
+      utilizationRate:        utilizationFromMW(fallbackMW),
       avgTempC:               avgTempC ?? 12,
       countryCode,
-      reportedPUE:            calibration?.pue ?? null,
+      reportedPUE,
       reportedWUE:            calibration?.wue ?? null,
       totalEnergyMWhOverride: allocatedMWh,
+      dcType,
+      footprintM2:            dc.footprintM2 ?? null,
     }) : null;
 
     const enriched = {
@@ -118,7 +142,7 @@ export default function App() {
     }
     setSelectedDC(prev => prev?.id === dc.id ? enriched : prev);
     enrichingRef.current.delete(dc.id);
-  }, [getAvgTemp, getWaterStress, countryDCStats]);
+  }, [getAvgTemp, getWaterStress, countryDCStats, precomputedMetrics]);
 
   const clearSimDC = useCallback(() => {
     const prev = selectedDCRef.current;
@@ -133,6 +157,7 @@ export default function App() {
     selectedDCRef.current = dc ?? null;
     setSelectedDC(dc ?? null);
     setSelectedCountry(null);
+    setSelectedEurope(false);
     if (dc && !dc.metrics) enrichDC(dc);
   }, [clearSimDC, enrichDC]);
 
@@ -189,12 +214,21 @@ export default function App() {
     [countryDCStats],
   );
 
+  const handleSelectEurope = useCallback(() => {
+    clearSimDC();
+    selectedDCRef.current = null;
+    setSelectedDC(null);
+    setSelectedCountry(null);
+    setSelectedEurope(true);
+  }, [clearSimDC]);
+
   const handleSelectCountry = useCallback((code) => {
     const stats = countryDCStats[code];
     if (!stats) return;
     clearSimDC();
     selectedDCRef.current = null;
     setSelectedDC(null);
+    setSelectedEurope(false);
     setSelectedCountry({
       countryCode: code,
       dcCount:     stats.campus_count,
@@ -213,6 +247,8 @@ export default function App() {
     [countryDCStats],
   );
 
+  const europeStats = useMemo(() => getEuropeStats(), []);
+
   // Only the simulation DC goes through the dynamic layer; real DCs come from static GeoJSON
   const simDCs = simDC ? [simDC] : [];
 
@@ -224,8 +260,11 @@ export default function App() {
           <span className="header-sub">Environmental footprint across Europe</span>
         </div>
         <div className="header-controls">
-          <button className="outlook-btn" onClick={() => setOutlookOpen(true)}>
-            Capacity Outlook
+          <button className="outlook-btn" onClick={handleSelectEurope}>
+            Europe
+          </button>
+          <button className="outlook-btn" onClick={() => { setLearnTab(0); setLearnOpen(true); }}>
+            Learn More
           </button>
           <button
             className="theme-toggle"
@@ -239,44 +278,85 @@ export default function App() {
 
       <main className="app-body">
         <aside className="sidebar" style={{ width: sidebarW }}>
-          <SimulationControls active={simActive} onToggle={handleSimToggle} />
-
           <div className="layer-controls">
-            <div className="section-label" style={{ padding: '16px 16px 8px' }}>Map Layers</div>
+            <div className="layer-section-label">Map overlay</div>
             {[
-              { id: 'none',   label: 'None' },
-              { id: 'carbon', label: 'Grid carbon intensity', src: 'Ember 2024 (2023 data)' },
-              { id: 'water',  label: 'Baseline water stress', src: 'WRI Aqueduct 3.0' },
-            ].map(({ id, label, src }) => (
-              <label key={id} className={`layer-radio ${activeLayer === id ? 'checked' : ''}`}>
-                <input type="radio" name="map-layer" value={id}
-                  checked={activeLayer === id} onChange={() => setActiveLayer(id)} />
-                <span className="layer-radio-dot" />
-                <div className="layer-toggle-label">
-                  <span>{label}</span>
-                  {src && <span className="layer-src">{src}</span>}
-                </div>
-              </label>
+              { id: 'none',   label: 'None',                   src: null,              opKey: null },
+              { id: 'carbon', label: 'Grid carbon intensity',  src: 'Ember 2024',      opKey: 'carbon' },
+              { id: 'water',  label: 'Watershed water stress', src: 'WRI Aqueduct 4.0',opKey: 'water' },
+            ].map(({ id, label, src, opKey }) => (
+              <div key={id}>
+                <label className={`layer-radio ${activeLayer === id ? 'checked' : ''}`}>
+                  <input type="radio" name="map-layer" value={id}
+                    checked={activeLayer === id} onChange={() => setActiveLayer(id)} />
+                  <span className="layer-radio-dot" />
+                  <div className="layer-toggle-label">
+                    <span>{label}</span>
+                    {src && <span className="layer-src">{src}</span>}
+                  </div>
+                </label>
+                {opKey && activeLayer === id && (
+                  <div className="layer-opacity-row">
+                    <span className="layer-opacity-label">Intensity</span>
+                    <input type="range" min="5" max="100" step="5"
+                      value={Math.round((layerOpacity[opKey] ?? 0.6) * 100)}
+                      onChange={e => setOpacity(opKey, +e.target.value / 100)}
+                      className="layer-opacity-slider" />
+                    <span className="layer-opacity-pct">{Math.round((layerOpacity[opKey] ?? 0.6) * 100)}%</span>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="layer-section-label layer-section-label--sep">Additional layers</div>
+            {[
+              { key: 'dots',    label: 'Campus markers',     src: null,             val: showDots,    set: setShowDots,    opKey: null },
+              { key: 'heatmap', label: 'DC concentration',   src: 'OSM',            val: showHeatmap, set: setShowHeatmap, opKey: 'heatmap' },
+              { key: 'iris',    label: 'France electricity', src: 'IRIS/RTE 2023',  val: showIris,    set: setShowIris,    opKey: 'iris' },
+            ].map(({ key, label, src, val, set, opKey }) => (
+              <div key={key}>
+                <label className={`layer-checkbox ${val ? 'checked' : ''}`}>
+                  <input type="checkbox" checked={val} onChange={() => set(v => !v)} />
+                  <span className="layer-checkbox-box" />
+                  <div className="layer-toggle-label">
+                    <span>{label}</span>
+                    {src && <span className="layer-src">{src}</span>}
+                  </div>
+                </label>
+                {opKey && val && (
+                  <div className="layer-opacity-row">
+                    <span className="layer-opacity-label">Intensity</span>
+                    <input type="range" min="5" max="100" step="5"
+                      value={Math.round((layerOpacity[opKey] ?? 0.75) * 100)}
+                      onChange={e => setOpacity(opKey, +e.target.value / 100)}
+                      className="layer-opacity-slider" />
+                    <span className="layer-opacity-pct">{Math.round((layerOpacity[opKey] ?? 0.75) * 100)}%</span>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
-          <Legend />
-          {totalCampuses > 0 && (
-            <div className="sidebar-stats">
-              <div className="stat">
+          <Legend activeLayer={activeLayer} showHeatmap={showHeatmap} showIris={showIris} showDots={showDots} />
+          <SimulationControls active={simActive} onToggle={handleSimToggle} />
+          <div className="sidebar-bottom">
+            {totalCampuses > 0 && (
+              <div className="sidebar-stat-line">
                 <span className="stat-value">{totalCampuses.toLocaleString()}</span>
                 <span className="stat-label">campuses mapped (Europe)</span>
               </div>
-            </div>
-          )}
+            )}
+            <button className="outlook-btn sidebar-calc-btn" onClick={() => { setLearnTab(4); setLearnOpen(true); }}>
+              How we calculate this →
+            </button>
+          </div>
         </aside>
         <div className="sidebar-resize-handle" onMouseDown={startSidebarResize} />
 
         <div className="map-wrapper">
           <DetailsPanel
             dc={selectedDC}
-            country={selectedCountry}
-            onClose={() => { handleSelectDC(null); setSelectedCountry(null); }}
+            onClose={() => handleSelectDC(null)}
             simCapacityMW={simCapacityMW}
             onCapacityChange={handleCapacityChange}
             onFlyTo={handleFlyTo}
@@ -292,10 +372,25 @@ export default function App() {
             onMapClick={handleMapClick}
             theme={theme}
             activeLayer={activeLayer}
+            showHeatmap={showHeatmap}
+            showIris={showIris}
+            showDots={showDots}
+            layerOpacity={layerOpacity}
           />
         </div>
       </main>
-      {outlookOpen && <CapacityOutlook onClose={() => setOutlookOpen(false)} />}
+      {(selectedCountry || selectedEurope) && (
+        <CountryModal
+          country={selectedCountry ?? null}
+          europe={selectedEurope ? europeStats : null}
+          onClose={() => { setSelectedCountry(null); setSelectedEurope(false); }}
+          onFlyTo={handleFlyTo}
+          onSelectCountry={handleSelectCountry}
+          totalCampuses={totalCampuses}
+          countryDCStats={countryDCStats}
+        />
+      )}
+      {learnOpen && <LearnMore onClose={() => setLearnOpen(false)} initialTab={learnTab} campusStats={campusStats} />}
     </div>
   );
 }

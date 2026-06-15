@@ -1,8 +1,7 @@
 import { useRef, useCallback, useMemo, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import MapGL, { Source, Layer } from 'react-map-gl/maplibre';
-import { waterStressLabel } from '../lib/model';
+import { waterStressLabel, inferDCType } from '../lib/model';
 import carbonData from '../data/carbonIntensity.json';
-import waterStressData from '../data/waterStress.json';
 import { SearchBar } from './SearchBar';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -11,14 +10,32 @@ const STYLES = {
   light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
 };
 
-const COUNTRIES_GEOJSON = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+const COUNTRIES_GEOJSON = '/data/countries_europe_10m.geojson';
+
+const CARBON_COLOR_STOPS = [
+  [0,   [22,  101, 52]],
+  [80,  [22,  163, 74]],
+  [200, [202, 138, 4]],
+  [320, [234, 88,  12]],
+  [450, [220, 38,  38]],
+  [650, [127, 29,  29]],
+];
 
 function intensityToColor(gco2) {
-  if (gco2 < 80)  return '#166534';
-  if (gco2 < 150) return '#15803d';
-  if (gco2 < 250) return '#a16207';
-  if (gco2 < 400) return '#c2410c';
-  return '#991b1b';
+  const stops = CARBON_COLOR_STOPS;
+  if (gco2 <= stops[0][0]) return rgbHex(stops[0][1]);
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [v0, c0] = stops[i];
+    const [v1, c1] = stops[i + 1];
+    if (gco2 <= v1) {
+      const t = (gco2 - v0) / (v1 - v0);
+      return rgbHex(c0.map((ch, j) => Math.round(ch + (c1[j] - ch) * t)));
+    }
+  }
+  return rgbHex(stops[stops.length - 1][1]);
+}
+function rgbHex([r, g, b]) {
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
 // Natural Earth 110m uses ISO_A2_EH for countries with overseas territories
@@ -29,22 +46,6 @@ const INTENSITY_COLOR_EXPR = [
   'rgba(0,0,0,0)',
 ];
 
-function waterStressToColor(bws) {
-  if (bws < 1) return '#22c55e';
-  if (bws < 2) return '#84cc16';
-  if (bws < 3) return '#eab308';
-  if (bws < 4) return '#f97316';
-  return '#ef4444';
-}
-
-const WATER_STRESS_COLOR_EXPR = [
-  'match',
-  ['get', 'ISO_A2_EH'],
-  ...Object.entries(waterStressData)
-    .filter(([k]) => k !== '_source')
-    .flatMap(([code, bws]) => [code, waterStressToColor(bws)]),
-  'rgba(0,0,0,0)',
-];
 
 function dcColor(dc) {
   if (dc.source === 'simulation') return '#a855f7';
@@ -83,7 +84,6 @@ function areaColorExpr(field) {
 }
 
 const CAMPUS_RADIUS = [
-  // Campuses with no footprint (OSM node-type, no polygon) get a fixed 7px so they're visible
   'case', ['>', ['coalesce', ['get', 'total_footprint_m2'], 0], 0],
   ['interpolate', ['linear'],
     ['get', 'total_footprint_m2'],
@@ -121,6 +121,7 @@ function campusToDC(props) {
     source:          'campus',
     sourceUrl:       props.osm_url || null,
     country:         props.country_iso2 || null,
+    dcType:          inferDCType(props.operator),
     tags:            {},
   };
 }
@@ -169,7 +170,12 @@ function campusTargetZoom(footprintM2) {
 export const MapView = forwardRef(function MapView({
   dataCenters, countryGroups, selectedDC, onSelectDC, onSelectCountry,
   simulationActive, onMapClick, theme, activeLayer,
+  showHeatmap, showIris, showDots,
+  layerOpacity,
 }, ref) {
+  // Viewport-adaptive KDE max: updated on moveend/zoomend so colours re-normalise
+  const [kdeMax, setKdeMax] = useState(1.0);
+  const kdeMaxRef = useRef(1.0);
   const mapRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -177,6 +183,33 @@ export const MapView = forwardRef(function MapView({
       mapRef.current?.getMap()?.flyTo({ center: [lng, lat], zoom, duration: 900 });
     },
   }));
+
+  // Viewport-adaptive KDE normalisation: re-query visible features after pan/zoom
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !showHeatmap) { setKdeMax(1); kdeMaxRef.current = 1; return; }
+
+    const update = () => {
+      if (!map.getLayer('dc-kde-fill')) return;
+      const features = map.queryRenderedFeatures({ layers: ['dc-kde-fill'] });
+      if (!features.length) return;
+      const maxD = features.reduce((m, f) => Math.max(m, +(f.properties?.density) || 0), 1);
+      if (Math.abs(maxD - kdeMaxRef.current) / (kdeMaxRef.current || 1) > 0.05) {
+        kdeMaxRef.current = maxD;
+        setKdeMax(maxD);
+      }
+    };
+
+    // Small delay so the layer is rendered before querying
+    const tid = setTimeout(update, 400);
+    map.on('moveend', update);
+    map.on('zoomend', update);
+    return () => {
+      clearTimeout(tid);
+      map.off('moveend', update);
+      map.off('zoomend', update);
+    };
+  }, [showHeatmap]);
 
   // Prefetched campus lookup: hash → campus properties, for reliable building→campus resolution
   const campusLookup = useRef(new Map());
@@ -332,11 +365,7 @@ export const MapView = forwardRef(function MapView({
           {/* Data overlays */}
           <Layer id="country-carbon-fill" type="fill" paint={{
             'fill-color': INTENSITY_COLOR_EXPR,
-            'fill-opacity': activeLayer === 'carbon' ? 0.55 : 0,
-          }} />
-          <Layer id="country-water-fill" type="fill" paint={{
-            'fill-color': WATER_STRESS_COLOR_EXPR,
-            'fill-opacity': activeLayer === 'water' ? 0.6 : 0,
+            'fill-opacity': activeLayer === 'carbon' ? (layerOpacity?.carbon ?? 0.55) : 0,
           }} />
 
           {/* Invisible clickable fill for countries we have data on */}
@@ -379,6 +408,28 @@ export const MapView = forwardRef(function MapView({
               'line-opacity': 0.9,
             }}
           />
+        </Source>
+
+        {/* ── Aqueduct watershed water stress (basin-level) ── */}
+        <Source id="aqueduct-basins" type="geojson" data="/data/aqueduct_eu_basins.geojson">
+          <Layer id="basin-water-fill" type="fill" paint={{
+            'fill-color': [
+              'interpolate', ['linear'],
+              ['coalesce', ['get', 'bws_score'], 0],
+              0, '#22c55e',
+              1, '#84cc16',
+              2, '#eab308',
+              3, '#f97316',
+              4, '#ef4444',
+              5, '#b91c1c',
+            ],
+            'fill-opacity': activeLayer === 'water' ? (layerOpacity?.water ?? 0.65) : 0,
+          }} />
+          <Layer id="basin-water-outline" type="line" paint={{
+            'line-color': 'rgba(0,0,0,0.12)',
+            'line-width': 0.4,
+            'line-opacity': activeLayer === 'water' ? (layerOpacity?.water ?? 0.65) : 0,
+          }} />
         </Source>
 
         {/* ── Building footprints (zoom ≥ 13) ── */}
@@ -441,13 +492,72 @@ export const MapView = forwardRef(function MapView({
           />
         </Source>
 
+        {/* ── France IRIS electricity layer (test overlay) ── */}
+        <Source id="iris-source" type="geojson" data="/data/iris_france.geojson">
+          <Layer
+            id="iris-fill"
+            type="fill"
+            paint={{
+              'fill-color': [
+                'interpolate', ['linear'],
+                ['coalesce', ['get', 'consommation_electricite_rte'], 0],
+                0,        '#fef9c3',
+                3000,     '#fde047',
+                11000,    '#fb923c',
+                55000,    '#dc2626',
+                200000,   '#7f1d1d',
+                1000000,  '#450a0a',
+              ],
+              'fill-opacity': showIris ? (layerOpacity?.iris ?? 0.75) : 0,
+            }}
+          />
+          <Layer
+            id="iris-outline"
+            type="line"
+            paint={{
+              'line-color': 'rgba(0,0,0,0.08)',
+              'line-width': 0.3,
+              'line-opacity': showIris ? Math.min(1, (layerOpacity?.iris ?? 0.75) * 1.2) : 0,
+            }}
+          />
+        </Source>
+
+        {/* ── DC density KDE — geographically fixed Gaussian, viewport-normalised ── */}
+        <Source id="dc-kde-source" type="geojson" data="/data/dc_heatmap.geojson">
+          <Layer
+            id="dc-kde-fill"
+            type="fill"
+            maxzoom={10}
+            paint={{
+              // Log scale: ln(density+1) so a 1 MW DC beside a 500 MW cluster still shows colour.
+              'fill-color': (() => {
+                const logMax = Math.log(Math.max(kdeMax, 2) + 1);
+                return [
+                  'interpolate', ['linear'],
+                  ['ln', ['+', ['max', ['get', 'density'], 0], 1]],
+                  0,              'rgba(0,0,0,0)',
+                  logMax * 0.04,  'rgba(99,102,241,0.3)',
+                  logMax * 0.15,  'rgba(99,102,241,0.7)',
+                  logMax * 0.32,  '#4f46e5',
+                  logMax * 0.52,  '#818cf8',
+                  logMax * 0.72,  '#f97316',
+                  logMax * 0.88,  '#ef4444',
+                  logMax,         '#b91c1c',
+                ];
+              })(),
+              'fill-opacity':    showHeatmap ? (layerOpacity?.heatmap ?? 0.85) : 0,
+              'fill-antialias':  true,
+            }}
+          />
+        </Source>
+
         {/* ── Campus dots + clusters (zoom < 13) ── */}
         <Source
           id="campus-source"
           type="geojson"
           data="/data/osm_campuses.geojson"
           cluster={true}
-          clusterRadius={50}
+          clusterRadius={40}
           clusterMaxZoom={CLUSTER_MAX_ZOOM}
         >
           {/* Cluster circles */}
@@ -463,11 +573,12 @@ export const MapView = forwardRef(function MapView({
               ],
               'circle-radius': [
                 'step', ['get', 'point_count'],
-                14, 10, 18, 50, 22, 200, 28,
+                10, 10, 13, 50, 16, 200, 20,
               ],
               'circle-stroke-width': 1.5,
               'circle-stroke-color': 'rgba(255,255,255,0.25)',
-              'circle-opacity': 0.85,
+              'circle-opacity': showDots ? 0.85 : 0,
+              'circle-stroke-opacity': showDots ? 1 : 0,
             }}
           />
           {/* Cluster count labels */}
@@ -479,9 +590,9 @@ export const MapView = forwardRef(function MapView({
             layout={{
               'text-field': '{point_count_abbreviated}',
               'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
-              'text-size': 12,
+              'text-size': 10,
             }}
-            paint={{ 'text-color': '#ffffff' }}
+            paint={{ 'text-color': showDots ? '#ffffff' : 'rgba(0,0,0,0)' }}
           />
           {/* Selection ring — always visible so selected campus is clear at any zoom */}
           <Layer
@@ -499,7 +610,7 @@ export const MapView = forwardRef(function MapView({
               'circle-stroke-color': '#22c55e',
             }}
           />
-          {/* Individual campus dots — always visible and clickable */}
+          {/* Individual campus dots — visibility controlled by showDots */}
           <Layer
             id="campus-circles"
             type="circle"
@@ -510,7 +621,8 @@ export const MapView = forwardRef(function MapView({
               'circle-radius':       CAMPUS_RADIUS,
               'circle-stroke-width': 1.5,
               'circle-stroke-color': 'rgba(255,255,255,0.55)',
-              'circle-opacity':      0.88,
+              'circle-opacity':      showDots ? 0.88 : 0,
+              'circle-stroke-opacity': showDots ? 1 : 0,
             }}
           />
         </Source>
