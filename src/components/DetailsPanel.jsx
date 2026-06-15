@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState } from 'react';
 import { waterStressLabel, getCarbonData } from '../lib/model';
 import { InfoTip, HoverDef } from './InfoTip';
 import { SuggestPanel } from './SuggestPanel';
@@ -140,30 +140,9 @@ function WaterStressGauge({ score, label, color }) {
   );
 }
 
-export function DetailsPanel({ dc, onClose, simCapacityMW, onCapacityChange, onFlyTo }) {
+export function DetailsPanel({ dc, onClose, onBack, canBack, onOpenOperator, simCapacityMW, onCapacityChange, onFlyTo }) {
   const [mixOpen, setMixOpen] = useState(false);
   const [sliderPos, setSliderPos] = useState(() => mwToSlider(simCapacityMW));
-
-  // ── Panel resize ────────────────────────────────────────────────────────
-  const [panelW, setPanelW] = useState(340);
-  const panelWRef = useRef(panelW);
-  panelWRef.current = panelW;
-  const startPanelResize = useCallback((e) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = panelWRef.current;
-    document.body.style.cursor = 'ew-resize';
-    document.body.style.userSelect = 'none';
-    const onMove = (me) => setPanelW(Math.max(240, Math.min(640, startW + me.clientX - startX)));
-    const onUp   = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, []);
 
   const handleSlider = (e) => {
     const pos = Number(e.target.value);
@@ -171,7 +150,6 @@ export function DetailsPanel({ dc, onClose, simCapacityMW, onCapacityChange, onF
     onCapacityChange(sliderToMW(pos));
   };
 
-  const isOpen = dc !== null;
   const m = dc?.metrics;
   const ws = waterStressLabel(dc?.waterStress?.score);
   const isSimulation = dc?.source === 'simulation';
@@ -193,17 +171,25 @@ export function DetailsPanel({ dc, onClose, simCapacityMW, onCapacityChange, onF
   );
 
   return (
-    <div className={`details-panel-wrapper ${isOpen ? 'open' : ''}`} style={{ width: panelW }}>
       <div className="details-panel">
         {dc && (
           <>
             {/* Header */}
             <div className="panel-header">
               <div className="panel-title-group">
+                {canBack && <button className="panel-back" onClick={onBack}>← Back</button>}
                 <h2 title={dc.name}>{dc.name}</h2>
-                <span className={`panel-operator ${!dc.operator ? 'no-operator' : ''}`}>
-                  {dc.operator ?? 'No operator indicated'}
-                </span>
+                {dc.operator ? (
+                  <button
+                    className="panel-operator panel-operator-link"
+                    onClick={() => onOpenOperator?.(dc.operator)}
+                    title={`View ${dc.operator}`}
+                  >
+                    {dc.operator} ↗
+                  </button>
+                ) : (
+                  <span className="panel-operator no-operator">No operator indicated</span>
+                )}
                 <div className="panel-source">
                   {(dc.source === 'osm' || dc.source === 'campus') && dc.sourceUrl
                     ? <a href={dc.sourceUrl} target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
@@ -515,9 +501,5 @@ export function DetailsPanel({ dc, onClose, simCapacityMW, onCapacityChange, onF
           </>
         )}
       </div>
-      {isOpen && (
-        <div className="panel-resize-handle" onMouseDown={startPanelResize} title="Drag to resize" />
-      )}
-    </div>
   );
 }

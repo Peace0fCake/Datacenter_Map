@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getCarbonData, getDCWattsPerCapita } from '../lib/model';
+import { useState } from 'react';
+import { getCarbonData, getDCWattsPerCapita, fmtEnergyMWh, HOURS_PER_YEAR } from '../lib/model';
 import { HoverDef } from './InfoTip';
-import { OperatorPanel } from './OperatorPanel';
 
 // ── Density presets ───────────────────────────────────────────────────────────
 const DENSITY = {
@@ -11,6 +10,9 @@ const DENSITY = {
 };
 const cfgFor = (d) => DENSITY[d] ?? DENSITY.full;
 const kMW = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n)}`);
+
+// Fallback when no precomputed energy: capacity (MW, footprint-derived ≈ avg power) × hours.
+const mwToEnergy = (mw) => (mw != null ? fmtEnergyMWh(mw * HOURS_PER_YEAR) : null);
 
 // ── Shared primitives ────────────────────────────────────────────────────────
 
@@ -82,19 +84,19 @@ function PipelineBar({ pipeline, compact }) {
       </div>
       {compact ? (
         <div className="pipeline-caption">
-          <span><span className="pipeline-dot pipeline-construction" />{kMW(pipeline.construction_mw)} building</span>
-          <span><span className="pipeline-dot pipeline-planned" />{kMW(pipeline.planned_mw)} planned</span>
-          <span><span className="pipeline-dot pipeline-current" />{kMW(pipeline.current_mw)} operating</span>
+          <span><span className="pipeline-dot pipeline-construction" />{mwToEnergy(pipeline.construction_mw)} building</span>
+          <span><span className="pipeline-dot pipeline-planned" />{mwToEnergy(pipeline.planned_mw)} planned</span>
+          <span><span className="pipeline-dot pipeline-current" />{mwToEnergy(pipeline.current_mw)} operating</span>
           <span className="pipeline-caption-total">CBRE/DCD ’24</span>
         </div>
       ) : (
         <>
           <div className="pipeline-rows">
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">{pipeline.construction_mw.toLocaleString()} MW</span></div>
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">{pipeline.planned_mw.toLocaleString()} MW</span></div>
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Operating today</span><span className="pipeline-row-mw">{pipeline.current_mw.toLocaleString()} MW</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.construction_mw)}/yr</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.planned_mw)}/yr</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Operating today</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.current_mw)}/yr</span></div>
           </div>
-          <div className="pipeline-total">{kMW(pipeline.construction_mw + pipeline.planned_mw)} MW of new capacity coming · <span className="pipeline-src">CBRE / DCD 2024</span></div>
+          <div className="pipeline-total">{mwToEnergy(pipeline.construction_mw + pipeline.planned_mw)}/yr of new demand coming · <span className="pipeline-src">CBRE / DCD 2024</span></div>
         </>
       )}
     </div>
@@ -189,7 +191,7 @@ function ShowMore({ hidden, expanded, onToggle }) {
 
 // ── Country panel content ─────────────────────────────────────────────────────
 
-function CountryContent({ country, onFlyTo, onOperatorClick, density }) {
+function CountryContent({ country, onOperatorClick, onOpenCampus, campusMetrics, density }) {
   const cfg = cfgFor(density);
   const [rankView, setRankView] = useState('campuses');   // 'campuses' | 'operators'
   const [opSort, setOpSort]     = useState('mw');
@@ -305,7 +307,7 @@ function CountryContent({ country, onFlyTo, onOperatorClick, density }) {
             </div>
             {rankView === 'operators' && (
               <div className="sort-toggle">
-                <button className={`sort-btn ${opSort === 'mw' ? 'active' : ''}`} onClick={() => setOpSort('mw')}>by MW</button>
+                <button className={`sort-btn ${opSort === 'mw' ? 'active' : ''}`} onClick={() => setOpSort('mw')}>by energy</button>
                 <button className={`sort-btn ${opSort === 'count' ? 'active' : ''}`} onClick={() => setOpSort('count')}>by campuses</button>
               </div>
             )}
@@ -314,14 +316,17 @@ function CountryContent({ country, onFlyTo, onOperatorClick, density }) {
           <div className="campus-ranking">
             {rankView === 'campuses'
               ? visible.map((c, i) => {
-                  const canFly = c.lat && c.lon;
+                  const mwh = campusMetrics?.[c.id]?.total_mwh_yr;
+                  const value = mwh != null ? `${fmtEnergyMWh(mwh)}/yr`
+                    : c.cap_mw != null ? `${mwToEnergy(c.cap_mw)}/yr`
+                    : `${(c.fp_m2 / 10000).toFixed(1)} ha`;
                   return (
                     <RankRow key={c.id ?? i} rank={i + 1} compact={cfg.compactRows}
                       name={c.name} typeId={c.type} typeLabel={TYPE_LABEL[c.type]} typeClass={TYPE_CLASS[c.type]}
                       barPct={Math.round((c.cap_mw ?? 0) / maxCap * 100)}
-                      value={c.cap_mw != null ? `${c.cap_mw} MW` : `${(c.fp_m2 / 10000).toFixed(1)} ha`}
-                      onClick={canFly ? () => onFlyTo?.({ lat: c.lat, lng: c.lon, zoom: 15 }) : undefined}
-                      fly={canFly} />
+                      value={value}
+                      onClick={() => onOpenCampus?.(c)}
+                      fly={!!(c.lat && c.lon)} />
                   );
                 })
               : visible.map((op, i) => (
@@ -329,7 +334,7 @@ function CountryContent({ country, onFlyTo, onOperatorClick, density }) {
                     name={op.name} typeId={op.type} typeLabel={TYPE_LABEL[op.type]} typeClass={TYPE_CLASS[op.type]}
                     barPct={Math.round((opSort === 'mw' ? (op.cap_mw ?? 0) : op.count) / maxOpVal * 100)}
                     value={opSort === 'mw'
-                      ? `${op.cap_mw ? `${op.cap_mw} MW` : `${op.count} site${op.count !== 1 ? 's' : ''}`}`
+                      ? (op.cap_mw ? `${mwToEnergy(op.cap_mw)}/yr` : `${op.count} site${op.count !== 1 ? 's' : ''}`)
                       : `${op.count} site${op.count !== 1 ? 's' : ''}`}
                     onClick={() => onOperatorClick?.(op.name)} fly />
                 ))}
@@ -460,61 +465,39 @@ function EuropeContent({ europe, onSelectCountry, totalCampuses, countryDCStats,
 
 // ── Main modal ────────────────────────────────────────────────────────────────
 
-export function CountryModal({ country, europe, onClose, onFlyTo, onSelectCountry, totalCampuses, countryDCStats, density = 'full' }) {
-  const [operatorName, setOperatorName] = useState(null);
-
-  useEffect(() => { setOperatorName(null); }, [country?.countryCode]);
-
-  const handleOverlayClick = useCallback((e) => {
-    if (e.target === e.currentTarget) onClose();
-  }, [onClose]);
-
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
-
+export function CountryModal({ country, europe, onClose, onBack, canBack, onSelectCountry, onOpenOperator, onOpenCampus, campusMetrics, totalCampuses, countryDCStats, density = 'full' }) {
   const isCountry = country && !europe;
   const title = isCountry ? (country.carbon.name ?? country.countryCode) : 'Europe';
   const subtitle = isCountry ? 'Country overview' : 'Continent overview';
 
   return (
-    <div className="country-modal-overlay" onClick={handleOverlayClick}>
-      <div className="country-modal" role="dialog" aria-modal="true">
-        <div className="cm-header">
-          <div>
-            <h2 className="cm-title">{title}</h2>
-            <span className="cm-subtitle">{subtitle}</span>
-          </div>
-          <button className="panel-close" onClick={onClose}>✕</button>
+    <div className="details-panel">
+      <div className="panel-header">
+        <div className="panel-title-group">
+          {canBack && <button className="panel-back" onClick={onBack}>← Back</button>}
+          <h2 title={title}>{title}</h2>
+          <span className="panel-operator">{subtitle}</span>
         </div>
-
-        {operatorName ? (
-          <div className="cm-body">
-            <OperatorPanel
-              name={operatorName}
-              onBack={() => setOperatorName(null)}
-              onFlyTo={(coords) => { onClose(); setTimeout(() => onFlyTo?.(coords), 50); }}
-            />
-          </div>
-        ) : isCountry ? (
-          <CountryContent
-            country={country}
-            density={density}
-            onFlyTo={(coords) => { onClose(); setTimeout(() => onFlyTo?.(coords), 50); }}
-            onOperatorClick={setOperatorName}
-          />
-        ) : (
-          <EuropeContent
-            europe={europe}
-            density={density}
-            onSelectCountry={(code) => { onClose(); setTimeout(() => onSelectCountry?.(code), 50); }}
-            totalCampuses={totalCampuses ?? 0}
-            countryDCStats={countryDCStats}
-          />
-        )}
+        <button className="panel-close" onClick={onClose}>✕</button>
       </div>
+
+      {isCountry ? (
+        <CountryContent
+          country={country}
+          density={density}
+          onOperatorClick={onOpenOperator}
+          onOpenCampus={onOpenCampus}
+          campusMetrics={campusMetrics}
+        />
+      ) : (
+        <EuropeContent
+          europe={europe}
+          density={density}
+          onSelectCountry={onSelectCountry}
+          totalCampuses={totalCampuses ?? 0}
+          countryDCStats={countryDCStats}
+        />
+      )}
     </div>
   );
 }

@@ -1,36 +1,37 @@
 import { useState, useEffect } from 'react';
+import { fmtEnergyMWh, HOURS_PER_YEAR } from '../lib/model';
 
 const TYPE_LABEL = { hyperscaler: 'Hyperscaler', cloud: 'Cloud', colocation: 'Colo', carrier: 'Carrier', enterprise: 'Enterprise' };
 const TYPE_CLASS  = { hyperscaler: 'type-hyper', cloud: 'type-cloud', colocation: 'type-colo', carrier: 'type-carrier', enterprise: 'type-enterprise' };
 
 // Module-level cache — operators.json is 370 KB, fetch once
 let _cache = null;
-async function loadOperators() {
+export async function loadOperators() {
   if (_cache) return _cache;
   const r = await fetch('/data/operators.json');
   _cache = await r.json();
   return _cache;
 }
 
-function fmt(mw) {
-  if (!mw) return null;
-  return mw >= 1000 ? `${(mw / 1000).toFixed(1)} GW` : `${mw.toFixed(0)} MW`;
-}
+const fmtMWh = (mwh) => (mwh ? `${fmtEnergyMWh(mwh)}/yr` : null);          // precomputed annual energy
+const fmtMW  = (mw)  => (mw  ? `${fmtEnergyMWh(mw * HOURS_PER_YEAR)}/yr` : null); // capacity → energy fallback
 function fmtHa(m2) {
   if (!m2) return null;
   return m2 >= 10_000 ? `${(m2 / 10_000).toFixed(1)} ha` : `${Math.round(m2).toLocaleString()} m²`;
 }
 
-function CampusRow({ campus, rank, maxMw, onFlyTo }) {
-  const canFly = campus.lat && campus.lon;
+function CampusRow({ campus, rank, maxMw, onOpenCampus, campusMetrics }) {
+  const canOpen = campus.lat && campus.lon;
   const displayMw = campus.cap_mw || 0;
   const pct = maxMw > 0 ? Math.round(displayMw / maxMw * 100) : 0;
+  const mwh = campusMetrics?.[campus.id]?.total_mwh_yr;
+  const energyLabel = mwh != null ? fmtMWh(mwh) : (displayMw ? fmtMW(displayMw) : fmtHa(campus.fp_m2));
 
   return (
     <div
-      className={`campus-rank-row ${canFly ? 'campus-rank-row--link' : ''}`}
-      onClick={canFly ? () => onFlyTo?.({ lat: campus.lat, lng: campus.lon, zoom: 15 }) : undefined}
-      title={canFly ? `Zoom to ${campus.name}` : undefined}
+      className={`campus-rank-row ${canOpen ? 'campus-rank-row--link' : ''}`}
+      onClick={canOpen ? () => onOpenCampus?.(campus) : undefined}
+      title={canOpen ? `Open ${campus.name}` : undefined}
     >
       <span className="rank-num">{rank}</span>
       <div className="rank-info">
@@ -44,17 +45,15 @@ function CampusRow({ campus, rank, maxMw, onFlyTo }) {
           <div className="rank-bar-track">
             <div className="rank-bar-fill type-hyper" style={{ width: `${pct}%` }} />
           </div>
-          <span className="rank-mw">
-            {displayMw ? fmt(displayMw) : fmtHa(campus.fp_m2)}
-          </span>
+          <span className="rank-mw">{energyLabel}</span>
         </div>
       </div>
-      {canFly && <span className="rank-fly">↗</span>}
+      {canOpen && <span className="rank-fly">↗</span>}
     </div>
   );
 }
 
-function CountrySection({ country, onFlyTo }) {
+function CountrySection({ country, onOpenCampus, campusMetrics }) {
   const [open, setOpen] = useState(country === null || true);
   const maxMw = country.campuses[0]?.cap_mw || 1;
 
@@ -64,7 +63,7 @@ function CountrySection({ country, onFlyTo }) {
         <span className="op-country-name">{country.name}</span>
         <span className="op-country-meta">
           {country.campus_count} campus{country.campus_count !== 1 ? 'es' : ''}
-          {country.cap_mw ? ` · ${fmt(country.cap_mw)}` : ''}
+          {country.cap_mw ? ` · ${fmtMW(country.cap_mw)}` : ''}
           {country.fp_m2 && !country.cap_mw ? ` · ${fmtHa(country.fp_m2)}` : ''}
         </span>
         <span className={`op-chevron ${open ? 'open' : ''}`}>›</span>
@@ -72,7 +71,7 @@ function CountrySection({ country, onFlyTo }) {
       {open && (
         <div className="campus-ranking op-campus-list">
           {country.campuses.map((c, i) => (
-            <CampusRow key={c.id || i} campus={c} rank={i + 1} maxMw={maxMw} onFlyTo={onFlyTo} />
+            <CampusRow key={c.id || i} campus={c} rank={i + 1} maxMw={maxMw} onOpenCampus={onOpenCampus} campusMetrics={campusMetrics} />
           ))}
         </div>
       )}
@@ -80,7 +79,7 @@ function CountrySection({ country, onFlyTo }) {
   );
 }
 
-export function OperatorPanel({ name, onBack, onFlyTo }) {
+export function OperatorPanel({ name, onBack, canBack, onClose, onOpenCampus, campusMetrics }) {
   const [op, setOp] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,14 +92,18 @@ export function OperatorPanel({ name, onBack, onFlyTo }) {
       .finally(() => setLoading(false));
   }, [name]);
 
+  // Open a campus from this operator's lists → tag it with the operator name/type
+  const openCampus = (campus) => onOpenCampus?.({ ...campus, operator: name, type: op?.type });
+
   return (
-    <>
+    <div className="details-panel">
       <div className="panel-header">
         <div className="panel-title-group">
-          <button className="panel-back" onClick={onBack}>← Back</button>
+          {canBack && <button className="panel-back" onClick={onBack}>← Back</button>}
           <h2>{name}</h2>
           {op && <span className="panel-operator">{TYPE_LABEL[op.type] ?? op.type}</span>}
         </div>
+        {onClose && <button className="panel-close" onClick={onClose}>✕</button>}
       </div>
 
       {loading && (
@@ -135,8 +138,8 @@ export function OperatorPanel({ name, onBack, onFlyTo }) {
             </div>
             <div className="op-stat-div" />
             <div className="op-stat">
-              <span className="op-stat-val">{op.total_cap_mw ? fmt(op.total_cap_mw) : '—'}</span>
-              <span className="op-stat-label">est. capacity</span>
+              <span className="op-stat-val">{op.total_cap_mw ? fmtMW(op.total_cap_mw) : '—'}</span>
+              <span className="op-stat-label">est. energy</span>
             </div>
             <div className="op-stat-div" />
             <div className="op-stat">
@@ -153,11 +156,11 @@ export function OperatorPanel({ name, onBack, onFlyTo }) {
           {/* Per-country sections — already sorted by cap_mw desc */}
           <div className="op-countries">
             {op.countries.map(c => (
-              <CountrySection key={c.code} country={c} onFlyTo={onFlyTo} />
+              <CountrySection key={c.code} country={c} onOpenCampus={openCampus} campusMetrics={campusMetrics} />
             ))}
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }

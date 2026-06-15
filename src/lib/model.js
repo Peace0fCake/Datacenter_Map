@@ -299,6 +299,17 @@ export function computeMetrics({ capacityMW, utilizationRate, avgTempC, countryC
   };
 }
 
+// ── Energy formatting ───────────────────────────────────────────────────────
+export const HOURS_PER_YEAR = 8760;
+
+// Format an annual energy in MWh as MWh / GWh / TWh
+export function fmtEnergyMWh(mwh) {
+  if (mwh == null) return '—';
+  if (mwh >= 1e6) return `${(mwh / 1e6).toFixed(mwh >= 1e7 ? 0 : 1)} TWh`;
+  if (mwh >= 1e3) return `${(mwh / 1e3).toFixed(mwh >= 1e4 ? 0 : 1)} GWh`;
+  return `${Math.round(mwh).toLocaleString()} MWh`;
+}
+
 // ── WRI Aqueduct water stress labels ────────────────────────────────────────
 export function waterStressLabel(score) {
   if (score === null || score === undefined) return { label: 'Unknown',        color: '#94a3b8', level: -1 };

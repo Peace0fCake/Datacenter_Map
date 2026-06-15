@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MapView } from './components/MapView';
 import { DetailsPanel } from './components/DetailsPanel';
+import { OperatorPanel, loadOperators } from './components/OperatorPanel';
+import { SidePanelFrame } from './components/SidePanelFrame';
 import { CountryModal } from './components/CountryModal';
 import { SimulationControls } from './components/SimulationControls';
 import { Legend } from './components/Legend';
@@ -22,7 +24,6 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelDensity, setPanelDensity] = useState(() => localStorage.getItem('panelDensity') || 'full');
   useEffect(() => { localStorage.setItem('panelDensity', panelDensity); }, [panelDensity]);
-  const [selectedEurope, setSelectedEurope] = useState(false);
   const [activeLayer, setActiveLayer] = useState('none');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showIris,    setShowIris]    = useState(false);
@@ -54,14 +55,53 @@ export default function App() {
   const { getAvgTemp }    = useClimateData();
   const { getWaterStress } = useWaterStress();
 
-  const [selectedDC, setSelectedDC]       = useState(null);
-  const selectedDCRef                      = useRef(null);
-  const [selectedCountry, setSelectedCountry] = useState(null);
+  // ── Navigation stack ───────────────────────────────────────────────────────
+  // A linear history of panels. Top of stack is what's shown:
+  //   { kind: 'dc', dc } | { kind: 'operator', name } | { kind: 'country', country } | { kind: 'europe' }
+  // 'dc'/'operator' render in the left side panel; 'country'/'europe' render as a window (modal).
+  const [stack, setStack] = useState([]);
+  const stackRef = useRef([]);
+  stackRef.current = stack;
+
+  const top        = stack[stack.length - 1] ?? null;
+  const canBack    = stack.length > 1;
+  const activeDC   = top?.kind === 'dc' ? top.dc : null;
+
+  const pushPanel   = useCallback((entry) => setStack(s => [...s, entry]), []);
+  const replaceRoot = useCallback((entry) => setStack([entry]), []);
+  const back        = useCallback(() => setStack(s => s.slice(0, -1)), []);
+  const closeAll    = useCallback(() => setStack([]), []);
 
   const mapViewRef = useRef(null);
   const handleFlyTo = useCallback(({ lat, lng, zoom }) => {
     mapViewRef.current?.flyTo({ lat, lng, zoom });
   }, []);
+
+  // When a country becomes the active panel (open or via Back), zoom to it + outline it
+  useEffect(() => {
+    if (top?.kind === 'country' && top.country?.countryCode) {
+      mapViewRef.current?.highlightCountry(top.country.countryCode);
+    }
+  }, [top]);
+
+  // While an operator panel is open, show only that operator's campuses on the map
+  const [operatorCampuses, setOperatorCampuses] = useState(null);
+  useEffect(() => {
+    if (top?.kind !== 'operator') { setOperatorCampuses(null); return; }
+    let cancelled = false;
+    loadOperators().then(d => {
+      if (cancelled) return;
+      const op = d.operators.find(o => o.name === top.name);
+      const feats = [];
+      for (const c of op?.countries ?? []) {
+        for (const camp of c.campuses ?? []) {
+          if (camp.lat && camp.lon) feats.push({ id: camp.id, name: camp.name, lat: camp.lat, lon: camp.lon });
+        }
+      }
+      setOperatorCampuses(feats);
+    }).catch(() => setOperatorCampuses(null));
+    return () => { cancelled = true; };
+  }, [top]);
 
   // ── Sidebar resize ────────────────────────────────────────────────────────
   const [sidebarW, setSidebarW] = useState(280);
@@ -86,7 +126,6 @@ export default function App() {
 
   const [simActive, setSimActive]       = useState(false);
   const [simCapacityMW, setSimCapacityMW] = useState(10);
-  const [simDC, setSimDC]               = useState(null);
 
   const enrichingRef = useRef(new Set());
 
@@ -141,32 +180,19 @@ export default function App() {
       calibrationSourceUrl: calibration?.url ?? null,
     };
 
-    if (dc.source === 'simulation') {
-      setSimDC(prev => prev?.id === dc.id ? enriched : prev);
-    }
-    setSelectedDC(prev => prev?.id === dc.id ? enriched : prev);
+    // Write the enriched DC back into its stack entry (datacenter or simulation)
+    setStack(s => s.map(e => (e.kind === 'dc' && e.dc.id === dc.id) ? { ...e, dc: enriched } : e));
     enrichingRef.current.delete(dc.id);
   }, [getAvgTemp, getWaterStress, countryDCStats, precomputedMetrics]);
 
-  const clearSimDC = useCallback(() => {
-    const prev = selectedDCRef.current;
-    if (prev?.source === 'simulation') {
-      enrichingRef.current.delete(prev.id);
-      setSimDC(null);
-    }
-  }, []);
-
+  // Selecting a campus from the map starts a fresh navigation (clears history)
   const handleSelectDC = useCallback((dc) => {
-    clearSimDC();
-    selectedDCRef.current = dc ?? null;
-    setSelectedDC(dc ?? null);
-    setSelectedCountry(null);
-    setSelectedEurope(false);
-    if (dc && !dc.metrics) enrichDC(dc);
-  }, [clearSimDC, enrichDC]);
+    if (!dc) { closeAll(); return; }
+    replaceRoot({ kind: 'dc', dc });
+    if (!dc.metrics) enrichDC(dc);
+  }, [enrichDC, replaceRoot, closeAll]);
 
   const handleMapClick = useCallback(({ lat, lng }) => {
-    clearSimDC();
     const id = `sim-${++simCounter}`;
     const newDC = {
       id, lat, lng,
@@ -175,27 +201,25 @@ export default function App() {
       capacityMW: simCapacityMW,
       source:     'simulation',
     };
-    selectedDCRef.current = newDC;
-    setSimDC(newDC);
-    setSelectedDC(newDC);
+    replaceRoot({ kind: 'dc', dc: newDC });
     enrichDC(newDC);
-  }, [simCapacityMW, clearSimDC, enrichDC]);
+  }, [simCapacityMW, replaceRoot, enrichDC]);
 
   const handleSimToggle = useCallback(() => {
     setSimActive(v => {
-      if (v) {
-        clearSimDC();
-        selectedDCRef.current = null;
-        setSelectedDC(null);
+      // Turning sim off while a simulated DC is showing → dismiss it
+      if (v && stackRef.current[stackRef.current.length - 1]?.dc?.source === 'simulation') {
+        setStack(s => s.slice(0, -1));
       }
       return !v;
     });
-  }, [clearSimDC]);
+  }, []);
 
   const handleCapacityChange = useCallback((mw) => {
     setSimCapacityMW(mw);
-    const recompute = (dc) => {
-      if (!dc) return null;
+    setStack(s => s.map((e, i) => {
+      if (i !== s.length - 1 || e.kind !== 'dc' || e.dc.source !== 'simulation') return e;
+      const dc = e.dc;
       const metrics = dc.avgTempC != null ? computeMetrics({
         capacityMW:     mw,
         utilizationRate: utilizationFromMW(mw),
@@ -204,10 +228,8 @@ export default function App() {
         reportedPUE:     null,
         reportedWUE:     null,
       }) : null;
-      return { ...dc, capacityMW: mw, name: `Simulated ${mw} MW DC`, metrics };
-    };
-    setSimDC(recompute);
-    setSelectedDC(prev => prev?.source === 'simulation' ? recompute(prev) : prev);
+      return { ...e, dc: { ...dc, capacityMW: mw, name: `Simulated ${mw} MW DC`, metrics } };
+    }));
   }, []);
 
   // Country groups derived from static campus stats — drives the country label layer
@@ -218,31 +240,58 @@ export default function App() {
     [countryDCStats],
   );
 
-  const handleSelectEurope = useCallback(() => {
-    clearSimDC();
-    selectedDCRef.current = null;
-    setSelectedDC(null);
-    setSelectedCountry(null);
-    setSelectedEurope(true);
-  }, [clearSimDC]);
+  const handleSelectEurope = useCallback(() => { replaceRoot({ kind: 'europe' }); }, [replaceRoot]);
 
-  const handleSelectCountry = useCallback((code) => {
+  const buildCountryEntry = useCallback((code) => {
     const stats = countryDCStats[code];
-    if (!stats) return;
-    clearSimDC();
-    selectedDCRef.current = null;
-    setSelectedDC(null);
-    setSelectedEurope(false);
-    setSelectedCountry({
-      countryCode: code,
-      dcCount:     stats.campus_count,
-      totalCapacityMW: 0,
-      carbon:   getCarbonData(code),
-      dcPower:  getCountryDCPower(code),
-      osm:      stats,
-      pipeline: pipelineByCountry[code] ?? null,
-    });
-  }, [countryDCStats, pipelineByCountry, clearSimDC]);
+    if (!stats) return null;
+    return {
+      kind: 'country',
+      country: {
+        countryCode: code,
+        dcCount:     stats.campus_count,
+        totalCapacityMW: 0,
+        carbon:   getCarbonData(code),
+        dcPower:  getCountryDCPower(code),
+        osm:      stats,
+        pipeline: pipelineByCountry[code] ?? null,
+      },
+    };
+  }, [countryDCStats, pipelineByCountry]);
+
+  // From the map / header → fresh root; from within a panel (Europe list) → push onto history
+  const openCountryFromMap = useCallback((code) => {
+    const entry = buildCountryEntry(code);
+    if (entry) replaceRoot(entry);
+  }, [buildCountryEntry, replaceRoot]);
+
+  const pushCountry = useCallback((code) => {
+    const entry = buildCountryEntry(code);
+    if (entry) pushPanel(entry);
+  }, [buildCountryEntry, pushPanel]);
+
+  const openOperator = useCallback((name) => { pushPanel({ kind: 'operator', name }); }, [pushPanel]);
+
+  // Open a campus from a list (country/operator panel): push its DC panel AND zoom to it.
+  const handleOpenCampus = useCallback((c) => {
+    if (!c?.id) return;
+    const dc = {
+      id:          c.id,
+      name:        c.name ?? 'Data Center',
+      lat:         c.lat,
+      lng:         c.lon,
+      operator:    c.operator ?? null,
+      capacityMW:  null,                 // footprint-derived; let enrichment allocate
+      footprintM2: c.fp_m2 ?? null,
+      source:      'campus',
+      country:     c.country ?? null,
+      dcType:      c.type ?? null,
+      sourceUrl:   c.osm_url ?? null,
+    };
+    pushPanel({ kind: 'dc', dc });
+    enrichDC(dc);
+    if (c.lat && c.lon) handleFlyTo({ lat: c.lat, lng: c.lon, zoom: 15 });
+  }, [pushPanel, enrichDC, handleFlyTo]);
 
   const totalCampuses = useMemo(() =>
     Object.entries(countryDCStats)
@@ -254,7 +303,7 @@ export default function App() {
   const europeStats = useMemo(() => getEuropeStats(), []);
 
   // Only the simulation DC goes through the dynamic layer; real DCs come from static GeoJSON
-  const simDCs = simDC ? [simDC] : [];
+  const simDCs = activeDC?.source === 'simulation' ? [activeDC] : [];
 
   return (
     <div className={`app theme-${theme}`}>
@@ -369,22 +418,54 @@ export default function App() {
         <div className="sidebar-resize-handle" onMouseDown={startSidebarResize} />
 
         <div className="map-wrapper">
-          <DetailsPanel
-            dc={selectedDC}
-            onClose={() => handleSelectDC(null)}
-            simCapacityMW={simCapacityMW}
-            onCapacityChange={handleCapacityChange}
-            onFlyTo={handleFlyTo}
-          />
+          <SidePanelFrame open={top != null}>
+            {(top?.kind === 'country' || top?.kind === 'europe') ? (
+              <CountryModal
+                country={top.kind === 'country' ? top.country : null}
+                europe={top.kind === 'europe' ? europeStats : null}
+                canBack={canBack}
+                onBack={back}
+                onClose={closeAll}
+                onSelectCountry={pushCountry}
+                onOpenOperator={openOperator}
+                onOpenCampus={handleOpenCampus}
+                campusMetrics={precomputedMetrics}
+                totalCampuses={totalCampuses}
+                countryDCStats={countryDCStats}
+                density={panelDensity}
+              />
+            ) : top?.kind === 'operator' ? (
+              <OperatorPanel
+                name={top.name}
+                canBack={canBack}
+                onBack={back}
+                onClose={closeAll}
+                onOpenCampus={handleOpenCampus}
+                campusMetrics={precomputedMetrics}
+              />
+            ) : (
+              <DetailsPanel
+                dc={activeDC}
+                canBack={canBack}
+                onBack={back}
+                onClose={closeAll}
+                onOpenOperator={openOperator}
+                simCapacityMW={simCapacityMW}
+                onCapacityChange={handleCapacityChange}
+                onFlyTo={handleFlyTo}
+              />
+            )}
+          </SidePanelFrame>
           <MapView
             ref={mapViewRef}
             dataCenters={simDCs}
             countryGroups={countryGroups}
-            selectedDC={selectedDC}
+            selectedDC={activeDC}
             onSelectDC={handleSelectDC}
-            onSelectCountry={handleSelectCountry}
+            onSelectCountry={openCountryFromMap}
             simulationActive={simActive}
             onMapClick={handleMapClick}
+            operatorCampuses={operatorCampuses}
             theme={theme}
             activeLayer={activeLayer}
             showHeatmap={showHeatmap}
@@ -394,18 +475,6 @@ export default function App() {
           />
         </div>
       </main>
-      {(selectedCountry || selectedEurope) && (
-        <CountryModal
-          country={selectedCountry ?? null}
-          europe={selectedEurope ? europeStats : null}
-          onClose={() => { setSelectedCountry(null); setSelectedEurope(false); }}
-          onFlyTo={handleFlyTo}
-          onSelectCountry={handleSelectCountry}
-          totalCampuses={totalCampuses}
-          countryDCStats={countryDCStats}
-          density={panelDensity}
-        />
-      )}
       {learnOpen && <LearnMore onClose={() => setLearnOpen(false)} initialTab={learnTab} campusStats={campusStats} />}
       {settingsOpen && (
         <SettingsPanel

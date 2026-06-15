@@ -169,18 +169,92 @@ function campusTargetZoom(footprintM2) {
 
 export const MapView = forwardRef(function MapView({
   dataCenters, countryGroups, selectedDC, onSelectDC, onSelectCountry,
-  simulationActive, onMapClick, theme, activeLayer,
+  simulationActive, onMapClick, operatorCampuses, theme, activeLayer,
   showHeatmap, showIris, showDots,
   layerOpacity,
 }, ref) {
+  const opFilterActive = (operatorCampuses?.length ?? 0) > 0;
+  const opFilterGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: (operatorCampuses ?? []).map(c => ({
+      type: 'Feature',
+      properties: { id: c.id, name: c.name },
+      geometry: { type: 'Point', coordinates: [c.lon, c.lat] },
+    })),
+  }), [operatorCampuses]);
   // Viewport-adaptive KDE max: updated on moveend/zoomend so colours re-normalise
   const [kdeMax, setKdeMax] = useState(1.0);
   const kdeMaxRef = useRef(1.0);
   const mapRef = useRef(null);
 
+  // Transient country outline (shown on country open, cleared on next user move)
+  const [outlineCountry, setOutlineCountry] = useState(null);
+  const countryBoundsRef = useRef({});
+  const clearOutlineRef = useRef(null);
+
+  // Build a bbox per country once, for fit-to-country zooming.
+  // Only coordinates within the European metropolitan window count, so countries
+  // with overseas territories (FR, UK, NL, ES, PT…) fit to their mainland, not the world.
+  useEffect(() => {
+    const inEU = (x, y) => x >= -26 && x <= 46 && y >= 34 && y <= 72;
+    fetch(COUNTRIES_GEOJSON).then(r => r.json()).then(gj => {
+      // Accumulate (union) per country code across all of its features, EU-window only,
+      // so overseas territories never widen the box and same-code features can't overwrite it.
+      const acc = {};
+      for (const f of gj.features || []) {
+        const code = f.properties?.ISO_A2_EH;
+        if (!code || !f.geometry) continue;
+        const a = acc[code] || (acc[code] = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+        const scan = (co) => {
+          if (typeof co[0] === 'number') {
+            if (!inEU(co[0], co[1])) return;
+            if (co[0] < a.minX) a.minX = co[0]; if (co[0] > a.maxX) a.maxX = co[0];
+            if (co[1] < a.minY) a.minY = co[1]; if (co[1] > a.maxY) a.maxY = co[1];
+          } else for (const c of co) scan(c);
+        };
+        scan(f.geometry.coordinates);
+      }
+      const bounds = {};
+      for (const [code, a] of Object.entries(acc)) {
+        if (a.minX < a.maxX) bounds[code] = [[a.minX, a.minY], [a.maxX, a.maxY]];
+      }
+      countryBoundsRef.current = bounds;
+    }).catch(() => {});
+  }, []);
+
+  // Width of the on-screen side panel — used to offset zoom targets into the visible area
+  const panelOffsetX = () => {
+    const el = typeof document !== 'undefined' && document.querySelector('.details-panel-wrapper');
+    return el ? el.getBoundingClientRect().width : 0;
+  };
+
   useImperativeHandle(ref, () => ({
     flyTo({ lat, lng, zoom = 15 }) {
-      mapRef.current?.getMap()?.flyTo({ center: [lng, lat], zoom, duration: 900 });
+      const map = mapRef.current?.getMap();
+      // Shift the target into the visible area (right of the side panel)
+      map?.flyTo({ center: [lng, lat], zoom, duration: 900, offset: [panelOffsetX() / 2, 0] });
+    },
+    highlightCountry(code) {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+      // tear down any previous clear listeners
+      clearOutlineRef.current?.();
+      setOutlineCountry(code);
+      const b = countryBoundsRef.current[code];
+      if (b) map.fitBounds(b, {
+        padding: { top: 50, right: 50, bottom: 50, left: panelOffsetX() + 30 },
+        duration: 900, maxZoom: 7,
+      });
+      // After the fit settles, clear the outline on the next user-initiated movement
+      map.once('moveend', () => {
+        const clear = () => {
+          setOutlineCountry(null);
+          map.off('dragstart', clear); map.off('zoomstart', clear); map.off('rotatestart', clear);
+          clearOutlineRef.current = null;
+        };
+        clearOutlineRef.current = clear;
+        map.on('dragstart', clear); map.on('zoomstart', clear); map.on('rotatestart', clear);
+      });
     },
   }));
 
@@ -279,7 +353,7 @@ export const MapView = forwardRef(function MapView({
       if (map) {
         map.flyTo({
           center: [campusFeat.properties.lon, campusFeat.properties.lat],
-          zoom: target, duration: 800,
+          zoom: target, duration: 800, offset: [panelOffsetX() / 2, 0],
         });
       }
       return;
@@ -406,6 +480,19 @@ export const MapView = forwardRef(function MapView({
               'line-color': '#818cf8',
               'line-width': 2,
               'line-opacity': 0.9,
+            }}
+          />
+
+          {/* Transient outline when a country panel is opened (cleared on user move) */}
+          <Layer
+            id="country-outline-highlight"
+            type="line"
+            filter={['==', ['get', 'ISO_A2_EH'], outlineCountry ?? '$$none$$']}
+            paint={{
+              'line-color': '#a5b4fc',
+              'line-width': 2.5,
+              'line-opacity': 0.95,
+              'line-blur': 0.4,
             }}
           />
         </Source>
@@ -577,8 +664,8 @@ export const MapView = forwardRef(function MapView({
               ],
               'circle-stroke-width': 1.5,
               'circle-stroke-color': 'rgba(255,255,255,0.25)',
-              'circle-opacity': showDots ? 0.85 : 0,
-              'circle-stroke-opacity': showDots ? 1 : 0,
+              'circle-opacity': (showDots && !opFilterActive) ? 0.85 : 0,
+              'circle-stroke-opacity': (showDots && !opFilterActive) ? 1 : 0,
             }}
           />
           {/* Cluster count labels */}
@@ -592,7 +679,7 @@ export const MapView = forwardRef(function MapView({
               'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
               'text-size': 10,
             }}
-            paint={{ 'text-color': showDots ? '#ffffff' : 'rgba(0,0,0,0)' }}
+            paint={{ 'text-color': (showDots && !opFilterActive) ? '#ffffff' : 'rgba(0,0,0,0)' }}
           />
           {/* Selection ring — always visible so selected campus is clear at any zoom */}
           <Layer
@@ -621,10 +708,24 @@ export const MapView = forwardRef(function MapView({
               'circle-radius':       CAMPUS_RADIUS,
               'circle-stroke-width': 1.5,
               'circle-stroke-color': 'rgba(255,255,255,0.55)',
-              'circle-opacity':      showDots ? 0.88 : 0,
-              'circle-stroke-opacity': showDots ? 1 : 0,
+              'circle-opacity':      (showDots && !opFilterActive) ? 0.88 : 0,
+              'circle-stroke-opacity': (showDots && !opFilterActive) ? 1 : 0,
             }}
           />
+        </Source>
+
+        {/* ── Operator filter: only this operator's campuses, highlighted ── */}
+        <Source id="op-filter-source" type="geojson" data={opFilterGeoJSON}>
+          <Layer id="op-filter-glow" type="circle" paint={{
+            'circle-radius': 11, 'circle-color': '#22c55e', 'circle-blur': 0.6,
+            'circle-opacity': opFilterActive ? 0.16 : 0,
+          }} />
+          <Layer id="op-filter-circles" type="circle" paint={{
+            'circle-radius': 6, 'circle-color': '#22c55e',
+            'circle-stroke-width': 1.5, 'circle-stroke-color': '#ffffff',
+            'circle-opacity': opFilterActive ? 0.95 : 0,
+            'circle-stroke-opacity': opFilterActive ? 1 : 0,
+          }} />
         </Source>
 
         {/* ── Simulation DC ── */}
