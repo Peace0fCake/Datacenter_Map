@@ -14,6 +14,11 @@ const kMW = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n)}`
 // Fallback when no precomputed energy: capacity (MW, footprint-derived ≈ avg power) × hours.
 const mwToEnergy = (mw) => (mw != null ? fmtEnergyMWh(mw * HOURS_PER_YEAR) : null);
 
+// Market-outlook capacity is reported by CBRE/DCD as IT-load megawatts — keep it in MW
+// (its native unit) rather than converting to energy, which would assume 100% load factor
+// and invite a false comparison with the national TWh figure (a different, all-DC measure).
+const fmtMW = (mw) => (mw >= 1000 ? `${(mw / 1000).toFixed(1)} GW` : `${Math.round(mw)} MW`);
+
 // ── Shared primitives ────────────────────────────────────────────────────────
 
 function SectionLabel({ children }) {
@@ -84,19 +89,19 @@ function PipelineBar({ pipeline, compact }) {
       </div>
       {compact ? (
         <div className="pipeline-caption">
-          <span><span className="pipeline-dot pipeline-construction" />{mwToEnergy(pipeline.construction_mw)} building</span>
-          <span><span className="pipeline-dot pipeline-planned" />{mwToEnergy(pipeline.planned_mw)} planned</span>
-          <span><span className="pipeline-dot pipeline-current" />{mwToEnergy(pipeline.current_mw)} operating</span>
+          <span><span className="pipeline-dot pipeline-current" />{fmtMW(pipeline.current_mw)} live</span>
+          <span><span className="pipeline-dot pipeline-construction" />+{fmtMW(pipeline.construction_mw)} building</span>
+          <span><span className="pipeline-dot pipeline-planned" />+{fmtMW(pipeline.planned_mw)} planned</span>
           <span className="pipeline-caption-total">CBRE/DCD ’24</span>
         </div>
       ) : (
         <>
           <div className="pipeline-rows">
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.construction_mw)}/yr</span></div>
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.planned_mw)}/yr</span></div>
-            <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Operating today</span><span className="pipeline-row-mw">{mwToEnergy(pipeline.current_mw)}/yr</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-current" /><span className="pipeline-row-label">Commercial market live today</span><span className="pipeline-row-mw">{fmtMW(pipeline.current_mw)}</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-construction" /><span className="pipeline-row-label">Under construction</span><span className="pipeline-row-mw">+{fmtMW(pipeline.construction_mw)}</span></div>
+            <div className="pipeline-row"><span className="pipeline-dot pipeline-planned" /><span className="pipeline-row-label">Announced / planned</span><span className="pipeline-row-mw">+{fmtMW(pipeline.planned_mw)}</span></div>
           </div>
-          <div className="pipeline-total">{mwToEnergy(pipeline.construction_mw + pipeline.planned_mw)}/yr of new demand coming · <span className="pipeline-src">CBRE / DCD 2024</span></div>
+          <div className="pipeline-total">+{fmtMW(pipeline.construction_mw + pipeline.planned_mw)} of new IT-load capacity in the pipeline · <span className="pipeline-src">CBRE / DCD 2024</span></div>
         </>
       )}
     </div>
@@ -348,7 +353,8 @@ function CountryContent({ country, onOperatorClick, onOpenCampus, campusMetrics,
         <div className="panel-section">
           <SectionLabel>Market outlook</SectionLabel>
           <p className="rank-caption" style={{ padding: '0 0 8px' }}>
-            Forward-looking market intelligence — independent of the OSM-mapped campuses above.
+            Commercial-market IT-load capacity (MW) tracked by CBRE/DCD — a forward-looking measure
+            distinct from the national electricity total above, which counts <em>all</em> data centres in energy terms (TWh).
           </p>
           <PipelineBar pipeline={pipeline} compact={cfg.compactPipeline} />
         </div>

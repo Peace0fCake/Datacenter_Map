@@ -48,9 +48,9 @@ const INTENSITY_COLOR_EXPR = [
 
 
 function dcColor(dc) {
-  if (dc.source === 'simulation') return '#a855f7';
+  if (dc.source === 'simulation') return '#ffffff';
   if (dc.waterStress !== undefined) return waterStressLabel(dc.waterStress?.score).color;
-  return '#6366f1';
+  return '#94a3b8';
 }
 
 function toDCGeoJSON(dataCenters, selectedId) {

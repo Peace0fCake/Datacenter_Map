@@ -61,7 +61,7 @@ Clicking a country shows a summary of its data centre sector:
 - National DC electricity consumption with clickable source links and per-capita draw
 - Grid carbon intensity and electricity mix from Ember Climate 2024 (2023 data)
 - Largest campuses and operators, merged behind one toggle and sortable by estimated MW or campus count
-- **Market outlook** — forward-looking under-construction and planned capacity (CBRE/DCD), framed as distinct from the OSM-mapped present rather than summed with it
+- **Market outlook** — forward-looking under-construction and planned capacity (CBRE/DCD). Reported in its native unit, **IT-load megawatts (MW)** — deliberately *not* converted to energy, to avoid a false comparison with the national TWh figure above, which measures a different universe (all data centres, in energy terms)
 
 The **Europe** button opens a continent-wide rollup: total campuses, TWh, Mt CO₂, weighted grid intensity, and a country ranking with operator-type breakdown.
 
@@ -188,6 +188,18 @@ WUE = 1.2 + 0.04 × max(0, T − 10), clamped [0.1, 3.5]
 - **CartoDB basemaps** — Dark Matter / Positron tile styles (no API key required)
 - **Python (numpy + scipy)** — offline pre-computation of campus metrics and the heatmap
 - Static deployment — no backend; all data fetched client-side at runtime
+
+The UI uses a **neutral (black / grey / white) palette** driven by CSS custom properties in `src/index.css`. Chrome (accents, links, toggles, hovers) is theme-neutral; colour is reserved for data encodings — operator types, electricity mix, and the carbon / water-stress gradients. Translucent tints route through a theme-aware `--accent-rgb` so both dark and light themes render correctly.
+
+### UI walkthrough screenshots
+
+`scripts/shots.mjs` drives the app with headless Chromium (Playwright) and captures the key surfaces to `scripts/.ux-shots/` — useful for visually reviewing layout/theme changes:
+
+```bash
+npx playwright install chromium     # one-time
+npm run dev                         # in one terminal
+URL=http://localhost:5173/ node scripts/shots.mjs
+```
 
 ---
 
